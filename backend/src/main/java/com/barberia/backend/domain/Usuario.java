@@ -32,6 +32,7 @@ public abstract class Usuario {
     @Column(nullable = false, unique = true)
     private String correo;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore // nunca exponer la clave en las respuestas JSON
     @Column(nullable = false)
     private String passwordHash;
 

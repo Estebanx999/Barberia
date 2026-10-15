@@ -8,6 +8,7 @@ import com.barberia.backend.domain.observer.NotificacionObservador;
 import com.barberia.backend.repository.BarberoRepository;
 import com.barberia.backend.repository.CitaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -44,7 +45,12 @@ public class CitaService {
         return citaRepository.findByBarberoAndFecha(barbero, fecha);
     }
 
-    /** HU-01 + HU-07: agenda una cita validando que no haya cruce de horario (RN-04). */
+    /**
+     * HU-01 + HU-07: agenda una cita validando que no haya cruce de horario (RN-04).
+     * @Transactional: Barbero.citas es LAZY y open-in-view esta desactivado, asi que
+     * tieneDisponibilidad() necesita una sesion abierta.
+     */
+    @Transactional
     public Cita agendarCita(Cliente cliente, Long barberoId, LocalDate fecha, LocalTime horaInicio, LocalTime horaFin) {
         Barbero barbero = barberoRepository.findById(barberoId)
                 .orElseThrow(() -> new IllegalArgumentException("Barbero no encontrado"));

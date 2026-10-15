@@ -4,7 +4,6 @@ import com.barberia.backend.domain.comision.ComisionDuenoStrategy;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -16,7 +15,6 @@ import lombok.Setter;
 @DiscriminatorValue("DUENO")
 @Getter
 @Setter
-@NoArgsConstructor
 public class Dueno extends Barbero {
 
     public Dueno() {

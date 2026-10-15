@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.Transient;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -28,9 +28,11 @@ public class Barbero extends Usuario {
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
 
+    @JsonIgnore // evita recursion infinita Barbero -> Cita -> Barbero al serializar
     @OneToMany(mappedBy = "barbero")
     private List<Cita> citas = new ArrayList<>();
 
+    @JsonIgnore
     @Transient
     private CalculadoraComisionStrategy calculadoraComision = new ComisionBarberoEmpleadoStrategy();
 

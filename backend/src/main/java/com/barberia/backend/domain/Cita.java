@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.Transient;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -51,6 +51,7 @@ public class Cita implements CitaSubject {
     @Enumerated(EnumType.STRING)
     private Estado estado = Estado.PENDIENTE;
 
+    @JsonIgnore
     @Transient
     private final List<ObservadorCita> observadores = new ArrayList<>();
 
