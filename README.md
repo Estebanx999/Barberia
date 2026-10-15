@@ -70,5 +70,16 @@ Copia `.env.example` a `.env` si el backend corre en otra URL.
 ```
 backend/   Spring Boot (dominio, patrones GoF, API REST)
 frontend/  React (pantallas del flujo principal del MVP)
-docs/      Diagramas C4, diagramas de actividad y plantillas (Entregable 2)
+docs/      Entregable 2 completo: documento final (docx/pdf), diagramas C4,
+           diagramas de actividad, capturas del prototipo y plantillas
+           GoF/SOLID diligenciadas
 ```
+
+## Entregable 2 — documento final
+
+`docs/Entregable_2_Barberia.docx` (y su version en PDF) contiene las 7
+secciones solicitadas: portada, tabla de refinamiento E1->E2, arquitectura
+C4 (4 niveles, con imagen + enlace editable + explicacion), patrones GoF,
+prototipo funcional (capturas del flujo principal), diagramas de actividad
+del MVP y analisis SOLID. Las plantillas GoF y SOLID diligenciadas estan en
+`docs/Plantilla_GoF_Barberia.docx` y `docs/Plantilla_SOLID_Barberia.docx`.
