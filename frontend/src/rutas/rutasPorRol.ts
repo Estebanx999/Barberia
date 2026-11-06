@@ -7,6 +7,16 @@ export const INICIO_POR_ROL: Record<Rol, string> = {
   DUENO: '/dueno',
 };
 
+/** Secciones del menú de cada rol; se completan módulo a módulo. */
+export const NAVEGACION: Record<Rol, { ruta: string; texto: string }[]> = {
+  CLIENTE: [
+    { ruta: '/cliente', texto: 'Mis citas' },
+    { ruta: '/cliente/agendar', texto: 'Agendar cita' },
+  ],
+  BARBERO: [],
+  DUENO: [],
+};
+
 export const NOMBRE_ROL: Record<Rol, string> = {
   CLIENTE: 'Cliente',
   BARBERO: 'Barbero',

@@ -1,5 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import { MarcoApp } from './componentes/MarcoApp';
+import { AgendarCita } from './paginas/cliente/AgendarCita';
+import { MisCitas } from './paginas/cliente/MisCitas';
 import { InicioSesion } from './paginas/InicioSesion';
 import { NoEncontrada, SinAcceso } from './paginas/Mensajes';
 import { Panel } from './paginas/Panel';
@@ -16,7 +18,8 @@ export function App() {
 
       <Route element={<MarcoApp />}>
         <Route element={<RutaProtegida roles={['CLIENTE']} />}>
-          <Route path="/cliente" element={<Panel />} />
+          <Route path="/cliente" element={<MisCitas />} />
+          <Route path="/cliente/agendar" element={<AgendarCita />} />
         </Route>
         <Route element={<RutaProtegida roles={['BARBERO']} />}>
           <Route path="/barbero" element={<Panel />} />

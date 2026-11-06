@@ -15,8 +15,22 @@ const usuario = (rol: Rol, nombre = 'Juan Pérez'): Usuario => ({
 });
 
 describe('inicio de sesión (HU-22, HU-23, HU-24)', () => {
+  it('lleva al cliente a sus citas', async () => {
+    simularApi({
+      'POST /api/auth/login': { cuerpo: { token: 'abc', usuario: usuario('CLIENTE') } },
+      'GET /api/citas/mias': { cuerpo: [] },
+    });
+    montarApp('/ingresar');
+
+    await userEvent.type(screen.getByLabelText('Correo'), 'juan@correo.com');
+    await userEvent.type(screen.getByLabelText('Contraseña'), 'secreta123');
+    await userEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+
+    expect(await screen.findByRole('heading', { name: 'Mis citas' })).toBeInTheDocument();
+    expect(leerToken()).toBe('abc');
+  });
+
   it.each([
-    ['CLIENTE', 'Desde aquí agendas tus citas'],
     ['BARBERO', 'Desde aquí ves tu agenda del día'],
     ['DUENO', 'Desde aquí ves la operación del día'],
   ] as const)('lleva al %s a su panel', async (rol, textoDelPanel) => {
@@ -56,7 +70,7 @@ describe('inicio de sesión (HU-22, HU-23, HU-24)', () => {
 
   it('cerrar sesión borra el token y vuelve al ingreso', async () => {
     guardarToken('abc');
-    simularApi({ 'GET /api/auth/yo': { cuerpo: usuario('CLIENTE') } });
+    simularApi({ 'GET /api/auth/yo': { cuerpo: usuario('CLIENTE') }, 'GET /api/citas/mias': { cuerpo: [] } });
     montarApp('/cliente');
 
     await userEvent.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
@@ -78,13 +92,14 @@ describe('registro de cliente (HU-21)', () => {
     const fetch = simularApi({
       'POST /api/auth/registro': { estado: 201, cuerpo: usuario('CLIENTE') },
       'POST /api/auth/login': { cuerpo: { token: 'nuevo', usuario: usuario('CLIENTE') } },
+      'GET /api/citas/mias': { cuerpo: [] },
     });
     montarApp('/registro');
 
     await llenar();
     await userEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
-    expect(await screen.findByText(/Desde aquí agendas tus citas/)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Mis citas' })).toBeInTheDocument();
     const cuerpo = JSON.parse(fetch.mock.calls[0]![1]!.body as string) as Record<string, string>;
     expect(cuerpo).toEqual({
       nombre: 'Juan Pérez',

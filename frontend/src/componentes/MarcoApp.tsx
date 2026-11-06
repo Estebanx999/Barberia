@@ -1,11 +1,12 @@
-import { Outlet } from 'react-router-dom';
-import { NOMBRE_ROL } from '../rutas/rutasPorRol';
+import { NavLink, Outlet } from 'react-router-dom';
+import { NAVEGACION, NOMBRE_ROL } from '../rutas/rutasPorRol';
 import { useSesion } from '../sesion/useSesion';
 import { Marca } from './Marca';
 
-/** Marco común de las páginas con sesión: encabezado con el usuario y su rol. */
+/** Marco común de las páginas con sesión: encabezado, menú del rol y usuario. */
 export function MarcoApp() {
   const { usuario, cerrarSesion } = useSesion();
+  const secciones = usuario ? NAVEGACION[usuario.rol] : [];
 
   return (
     <div className="marco">
@@ -13,6 +14,15 @@ export function MarcoApp() {
         <div className="poste" aria-hidden="true" />
         <div className="encabezado__contenido">
           <Marca tamano="pequena" />
+          {secciones.length > 0 && (
+            <nav className="menu" aria-label="Secciones">
+              {secciones.map((seccion) => (
+                <NavLink key={seccion.ruta} to={seccion.ruta} end className="menu__enlace">
+                  {seccion.texto}
+                </NavLink>
+              ))}
+            </nav>
+          )}
           {usuario && (
             <div className="encabezado__usuario">
               <span>

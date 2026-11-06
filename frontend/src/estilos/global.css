@@ -346,3 +346,255 @@ a:hover {
 .mensaje p {
   color: var(--piedra);
 }
+
+/* --- Menú del rol ------------------------------------------------------ */
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-right: auto;
+}
+
+.menu__enlace {
+  padding: 0.45rem 0.8rem;
+  border-radius: var(--radio-control);
+  color: var(--piedra);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.menu__enlace:hover {
+  color: var(--hueso);
+}
+
+.menu__enlace.active {
+  color: var(--hueso);
+  background: var(--superficie);
+  box-shadow: inset 0 -2px 0 var(--laton);
+}
+
+/* --- Páginas ----------------------------------------------------------- */
+.pagina {
+  display: grid;
+  gap: 1.75rem;
+}
+
+.pagina__titulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+h2 {
+  font-size: 1.3rem;
+}
+
+.texto-tenue {
+  color: var(--piedra);
+}
+
+.aviso--exito {
+  border-color: var(--laton);
+}
+
+.vacio {
+  padding: 2rem 1.5rem;
+  border: 1px dashed var(--borde);
+  border-radius: var(--radio-tarjeta);
+  color: var(--piedra);
+}
+
+.bloque {
+  display: grid;
+  gap: 0.85rem;
+}
+
+/* --- Opciones de selección (barbero, día, hora) ------------------------ */
+.grupo {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.grupo__leyenda {
+  padding: 0;
+  font-stretch: 75%;
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+
+.opciones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.opciones--fila {
+  overflow-x: auto;
+  padding-bottom: 0.4rem;
+  scroll-snap-type: x proximity;
+}
+
+.opciones--rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.25rem, 1fr));
+}
+
+.opcion {
+  position: relative;
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+.opcion input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.opcion__cara {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-control);
+  background: var(--superficie);
+  color: var(--hueso);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.opcion input:hover + .opcion__cara {
+  border-color: var(--piedra);
+}
+
+.opcion input:checked + .opcion__cara {
+  background: var(--laton);
+  border-color: var(--laton);
+  color: var(--cuero-profundo);
+}
+
+.opcion input:focus-visible + .opcion__cara {
+  outline: 2px solid var(--laton-claro);
+  outline-offset: 3px;
+}
+
+.dia {
+  display: grid;
+  justify-items: center;
+  line-height: 1.2;
+}
+
+.dia__nombre {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.dia__numero {
+  font-stretch: 75%;
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.opcion input:checked + .opcion__cara .dia__nombre {
+  color: inherit;
+}
+
+/* --- Agendar ----------------------------------------------------------- */
+.agendar {
+  display: grid;
+  gap: 1.75rem;
+  max-width: 52rem;
+}
+
+.agendar__resumen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radio-tarjeta);
+  background: var(--superficie);
+}
+
+.agendar__resumen p {
+  font-weight: 600;
+}
+
+/* --- Lista de citas ---------------------------------------------------- */
+.citas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+  max-width: 52rem;
+}
+
+.cita {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radio-tarjeta);
+  background: var(--superficie);
+}
+
+.citas--tenues .cita {
+  background: transparent;
+  border: 1px solid var(--borde);
+}
+
+.cita__dia {
+  display: grid;
+  line-height: 1.15;
+  white-space: nowrap;
+  color: var(--laton-claro);
+}
+
+.cita__detalle {
+  display: grid;
+}
+
+.cita__hora {
+  font-weight: 650;
+}
+
+.estado {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--borde);
+  color: var(--piedra);
+}
+
+.estado--agendada {
+  border-color: var(--laton);
+  color: var(--laton-claro);
+}
+
+@media (max-width: 30rem) {
+  .cita {
+    grid-template-columns: 5rem 1fr;
+  }
+
+  .cita .estado {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .agendar__resumen .boton {
+    width: 100%;
+  }
+}
