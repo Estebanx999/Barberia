@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: barberia-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/barberia}
+    username: ${DB_USER:barberia}
+    password: ${DB_PASSWORD:barberia}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate   # el esquema se crea aparte; Hibernate solo lo verifica
