@@ -57,6 +57,11 @@ public class ConsultaAgendaService {
         return conNombresDeClientes(citas.findByBarberoIdAndFechaOrderByHoraInicio(barberoId, fecha));
     }
 
+    /** HU-24: citas del cliente autenticado, las más recientes primero. */
+    public List<CitaVista> citasDelCliente(Long clienteId) {
+        return conNombresDeClientes(citas.findByClienteIdOrderByFechaDescHoraInicioDesc(clienteId));
+    }
+
     /** HU-06: citas de todos los barberos en el día, agrupadas por barbero y ordenadas por hora. */
     public List<CalendarioBarbero> calendarioGeneral(LocalDate fecha) {
         Map<Long, List<CitaVista>> citasPorBarbero =

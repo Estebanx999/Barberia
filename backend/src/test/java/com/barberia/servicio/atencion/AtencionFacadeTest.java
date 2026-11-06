@@ -7,6 +7,7 @@ import com.barberia.repositorio.BarberoRepository;
 import com.barberia.repositorio.CitaRepository;
 import com.barberia.repositorio.ClienteRepository;
 import com.barberia.repositorio.CorteRepository;
+import com.barberia.servicio.AccesoDenegadoException;
 import com.barberia.servicio.RecursoNoEncontradoException;
 import com.barberia.servicio.ReglaNegocioException;
 import com.barberia.servicio.agenda.CitaVista;
@@ -63,7 +64,7 @@ class AtencionFacadeTest {
     void marcaLaCitaDeHoyComoAtendida() {
         Cita cita = citaRegistrada(carlos, false);
 
-        CitaVista vista = fachada.marcarAtendida(1L);
+        CitaVista vista = fachada.marcarAtendida(1L, 2L);
 
         assertEquals(EstadoCita.ATENDIDA, cita.getEstado());
         assertEquals(EstadoCita.ATENDIDA, vista.estado());
@@ -75,21 +76,33 @@ class AtencionFacadeTest {
         Cita futura = cita(1, carlos, 5, DIA.plusDays(1), "10:00");
         when(citas.findByIdParaAtender(1L)).thenReturn(Optional.of(futura));
 
-        assertThrows(ReglaNegocioException.class, () -> fachada.marcarAtendida(1L));
+        assertThrows(ReglaNegocioException.class, () -> fachada.marcarAtendida(1L, 2L));
         assertEquals(EstadoCita.AGENDADA, futura.getEstado());
     }
 
     @Test
     void noMarcaDosVecesLaMismaCita() {
         citaRegistrada(carlos, true);
-        assertThrows(ReglaNegocioException.class, () -> fachada.marcarAtendida(1L));
+        assertThrows(ReglaNegocioException.class, () -> fachada.marcarAtendida(1L, 2L));
     }
 
     @Test
     void citaInexistenteResponde404() {
         when(citas.findByIdParaAtender(99L)).thenReturn(Optional.empty());
-        assertThrows(RecursoNoEncontradoException.class, () -> fachada.marcarAtendida(99L));
-        assertThrows(RecursoNoEncontradoException.class, () -> fachada.registrarAtencion(99L, "Corte", TREINTA_MIL));
+        assertThrows(RecursoNoEncontradoException.class, () -> fachada.marcarAtendida(99L, 2L));
+        assertThrows(RecursoNoEncontradoException.class, () -> fachada.registrarAtencion(99L, 2L, "Corte", TREINTA_MIL));
+    }
+
+    @Test
+    void otroBarberoNoPuedeAtenderLaCita() {
+        Cita cita = citaRegistrada(carlos, false);
+
+        assertThrows(AccesoDenegadoException.class, () -> fachada.marcarAtendida(1L, 3L));
+        assertEquals(EstadoCita.AGENDADA, cita.getEstado());
+
+        cita.marcarAtendida();
+        assertThrows(AccesoDenegadoException.class, () -> fachada.registrarAtencion(1L, 3L, "Corte", TREINTA_MIL));
+        verify(cortes, never()).save(any());
     }
 
     // --- HU-27 + HU-13 ---
@@ -98,7 +111,7 @@ class AtencionFacadeTest {
     void registraElCobroYAplicaLaPoliticaDelBarbero() {
         citaRegistrada(carlos, true);
 
-        CorteVista corte = fachada.registrarAtencion(1L, "Corte clásico", TREINTA_MIL);
+        CorteVista corte = fachada.registrarAtencion(1L, 2L, "Corte clásico", TREINTA_MIL);
 
         assertTrue(corte.tieneCitaPrevia());
         assertEquals(1L, corte.citaId());
@@ -114,7 +127,7 @@ class AtencionFacadeTest {
     void cuandoCortaElDuenoAplicaLaPoliticaDelDueno() {
         citaRegistrada(oscar, true);
 
-        CorteVista corte = fachada.registrarAtencion(1L, "Corte clásico", TREINTA_MIL);
+        CorteVista corte = fachada.registrarAtencion(1L, 3L, "Corte clásico", TREINTA_MIL);
 
         assertMonto("0", corte.comision().montoBarbero());
         assertMonto("30000", corte.comision().montoDueno());
@@ -123,7 +136,7 @@ class AtencionFacadeTest {
     @Test
     void noRegistraElCobroDeUnaCitaNoAtendida() {
         citaRegistrada(carlos, false);
-        assertThrows(ReglaNegocioException.class, () -> fachada.registrarAtencion(1L, "Corte", TREINTA_MIL));
+        assertThrows(ReglaNegocioException.class, () -> fachada.registrarAtencion(1L, 2L, "Corte", TREINTA_MIL));
         verify(cortes, never()).save(any());
     }
 
@@ -132,7 +145,7 @@ class AtencionFacadeTest {
         citaRegistrada(carlos, true);
         when(cortes.existsByCitaId(1L)).thenReturn(true);
 
-        assertThrows(ReglaNegocioException.class, () -> fachada.registrarAtencion(1L, "Corte", TREINTA_MIL));
+        assertThrows(ReglaNegocioException.class, () -> fachada.registrarAtencion(1L, 2L, "Corte", TREINTA_MIL));
         verify(cortes, never()).save(any());
     }
 

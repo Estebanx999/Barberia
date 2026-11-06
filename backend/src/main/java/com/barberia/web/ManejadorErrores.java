@@ -1,8 +1,12 @@
 package com.barberia.web;
 
+import com.barberia.servicio.AccesoDenegadoException;
 import com.barberia.servicio.RecursoNoEncontradoException;
 import com.barberia.servicio.ReglaNegocioException;
 import com.barberia.servicio.agenda.HorarioNoDisponibleException;
+import com.barberia.servicio.autenticacion.CorreoYaRegistradoException;
+import com.barberia.servicio.autenticacion.CredencialesInvalidasException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,6 +31,30 @@ public class ManejadorErrores extends ResponseEntityExceptionHandler {
         ProblemDetail problema = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problema.setProperty("horariosDisponibles", ex.getHorariosDisponibles());
         return problema;
+    }
+
+    /** HU-21: correo ya registrado. */
+    @ExceptionHandler(CorreoYaRegistradoException.class)
+    public ProblemDetail correoYaRegistrado(CorreoYaRegistradoException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    /** HU-22/23/24: credenciales inválidas. */
+    @ExceptionHandler(CredencialesInvalidasException.class)
+    public ProblemDetail credencialesInvalidas(CredencialesInvalidasException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
+
+    /** HU-26: el rol o el usuario no tiene acceso a esa información. */
+    @ExceptionHandler(AccesoDenegadoException.class)
+    public ProblemDetail accesoDenegado(AccesoDenegadoException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
+    /** Dos solicitudes simultáneas chocaron con una restricción única (por ejemplo, el mismo correo). */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail conflictoDeDatos(DataIntegrityViolationException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "La operación choca con datos ya registrados");
     }
 
     @ExceptionHandler(ReglaNegocioException.class)

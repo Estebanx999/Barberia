@@ -10,11 +10,11 @@ import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 
 /**
- * Cuerpo de POST /api/cortes (HU-28). Se envía clienteId si el cliente ya está
- * registrado, o clienteNombre (y clienteTelefono opcional) si es nuevo.
+ * Cuerpo de POST /api/cortes (HU-28). El barbero es el usuario autenticado.
+ * Se envía clienteId si el cliente ya está registrado, o clienteNombre (y
+ * clienteTelefono opcional) si es nuevo.
  */
 public record CorteSinCitaRequest(
-        @NotNull Long barberoId,
         Long clienteId,
         String clienteNombre,
         String clienteTelefono,

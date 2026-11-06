@@ -24,4 +24,9 @@ public class Dueno extends Barbero {
     public boolean esDueno() {
         return true;
     }
+
+    @Override
+    public Rol getRol() {
+        return Rol.DUENO;
+    }
 }

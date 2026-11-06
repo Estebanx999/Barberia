@@ -16,3 +16,6 @@ barberia:
     cierre: "20:00"
     duracion-turno: 30m
     zona-horaria: America/Bogota
+  seguridad:
+    jwt-secreto: ${JWT_SECRETO}   # mínimo 32 caracteres; nunca se guarda en el repositorio
+    duracion-token: 8h

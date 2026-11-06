@@ -22,4 +22,9 @@ public class Barbero extends Usuario {
     public boolean esDueno() {
         return false;
     }
+
+    @Override
+    public Rol getRol() {
+        return Rol.BARBERO;
+    }
 }

@@ -19,4 +19,9 @@ public class Cliente extends Usuario {
     public Cliente(String nombre, String correo, String telefono) {
         super(nombre, correo, telefono);
     }
+
+    @Override
+    public Rol getRol() {
+        return Rol.CLIENTE;
+    }
 }

@@ -1,9 +1,11 @@
 package com.barberia.web;
 
 import com.barberia.dominio.EstadoCita;
+import com.barberia.dominio.Rol;
 import com.barberia.servicio.RecursoNoEncontradoException;
 import com.barberia.servicio.ReglaNegocioException;
 import com.barberia.servicio.agenda.*;
+import com.barberia.soporte.UsuarioFijoResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -16,7 +18,9 @@ import java.time.LocalTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -24,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CitaControllerTest {
 
     private static final String SOLICITUD = """
-            {"clienteId": 1, "barberoId": 2, "fecha": "2026-11-10", "horaInicio": "10:00"}
+            {"barberoId": 2, "fecha": "2026-11-10", "horaInicio": "10:00"}
             """;
 
     private final AgendamientoService agendamiento = mock(AgendamientoService.class);
@@ -35,6 +39,7 @@ class CitaControllerTest {
     void preparar() {
         mvc = MockMvcBuilders.standaloneSetup(new CitaController(agendamiento, consultas))
                 .setControllerAdvice(new ManejadorErrores())
+                .setCustomArgumentResolvers(new UsuarioFijoResolver(1L, Rol.CLIENTE))
                 .build();
     }
 
@@ -51,6 +56,15 @@ class CitaControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(10))
                 .andExpect(jsonPath("$.estado").value("AGENDADA"));
+        // El cliente de la cita es el usuario autenticado, no un dato del cuerpo.
+        verify(agendamiento).agendar(argThat(solicitud -> solicitud.clienteId().equals(1L)));
+    }
+
+    @Test
+    void misCitasDevuelveLasDelClienteAutenticado() throws Exception {
+        when(consultas.citasDelCliente(1L)).thenReturn(List.of());
+        mvc.perform(get("/api/citas/mias")).andExpect(status().isOk());
+        verify(consultas).citasDelCliente(1L);
     }
 
     @Test
@@ -66,7 +80,7 @@ class CitaControllerTest {
     @Test
     void solicitudIncompletaRespondeBadRequest() throws Exception {
         enviar("""
-                {"clienteId": 1, "barberoId": 2}
+                {"barberoId": 2}
                 """).andExpect(status().isBadRequest());
         verifyNoInteractions(agendamiento);
     }

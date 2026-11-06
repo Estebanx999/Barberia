@@ -6,14 +6,16 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-/** Cuerpo de POST /api/citas. Ejemplo: {"clienteId":1,"barberoId":2,"fecha":"2026-11-10","horaInicio":"10:00"} */
+/**
+ * Cuerpo de POST /api/citas. Ejemplo: {"barberoId":2,"fecha":"2026-11-10","horaInicio":"10:00"}.
+ * El cliente es el usuario autenticado: no se recibe en el cuerpo.
+ */
 public record SolicitudCitaRequest(
-        @NotNull Long clienteId,
         @NotNull Long barberoId,
         @NotNull LocalDate fecha,
         @NotNull LocalTime horaInicio) {
 
-    public SolicitudCita aSolicitud() {
+    public SolicitudCita aSolicitud(Long clienteId) {
         return new SolicitudCita(clienteId, barberoId, fecha, horaInicio);
     }
 }

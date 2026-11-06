@@ -20,6 +20,10 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
     /** Calendario de un barbero ordenado por hora (HU-05). */
     List<Cita> findByBarberoIdAndFechaOrderByHoraInicio(Long barberoId, LocalDate fecha);
 
+    /** Citas de un cliente, las más recientes primero (HU-24). */
+    @EntityGraph(attributePaths = "barbero")
+    List<Cita> findByClienteIdOrderByFechaDescHoraInicioDesc(Long clienteId);
+
     /** Todas las citas de un día con su barbero: calendario general del dueño (HU-06). */
     @EntityGraph(attributePaths = "barbero")
     List<Cita> findByFechaOrderByHoraInicio(LocalDate fecha);

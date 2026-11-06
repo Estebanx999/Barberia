@@ -2,9 +2,12 @@ package com.barberia.dominio;
 
 import jakarta.persistence.*;
 
+import java.util.Locale;
+
 /**
  * Datos comunes de las personas del sistema (nivel 4: Usuario).
- * La autenticación y los roles quedan fuera del MVP: se asume resuelta.
+ * Cada subclase declara su rol, que define a qué funciones accede (HU-26).
+ * La contraseña se guarda solo como hash; el dominio nunca ve el texto plano.
  */
 @Entity
 @Table(name = "usuario")
@@ -19,11 +22,15 @@ public abstract class Usuario {
     @Column(nullable = false, length = 120)
     private String nombre;
 
-    @Column(length = 160)
+    @Column(length = 160, unique = true)
     private String correo;
 
     @Column(length = 30)
     private String telefono;
+
+    /** Nulo para clientes registrados por un barbero (HU-28), que no tienen cuenta. */
+    @Column(name = "contrasena_hash", length = 100)
+    private String contrasenaHash;
 
     protected Usuario() {
         // requerido por JPA
@@ -33,9 +40,33 @@ public abstract class Usuario {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre es obligatorio");
         }
-        this.nombre = nombre;
-        this.correo = correo;
+        this.nombre = nombre.trim();
+        this.correo = normalizarCorreo(correo);
         this.telefono = telefono;
+    }
+
+    /** Los correos se comparan sin distinguir mayúsculas ni espacios alrededor. */
+    public static String normalizarCorreo(String correo) {
+        if (correo == null || correo.isBlank()) {
+            return null;
+        }
+        return correo.trim().toLowerCase(Locale.ROOT);
+    }
+
+    public abstract Rol getRol();
+
+    public void asignarContrasenaHash(String hash) {
+        if (hash == null || hash.isBlank()) {
+            throw new IllegalArgumentException("El hash de la contraseña es obligatorio");
+        }
+        if (correo == null) {
+            throw new IllegalStateException("Un usuario sin correo no puede tener cuenta");
+        }
+        this.contrasenaHash = hash;
+    }
+
+    public boolean tieneCuenta() {
+        return contrasenaHash != null;
     }
 
     public Long getId() {
@@ -52,5 +83,9 @@ public abstract class Usuario {
 
     public String getTelefono() {
         return telefono;
+    }
+
+    public String getContrasenaHash() {
+        return contrasenaHash;
     }
 }

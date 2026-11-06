@@ -1,5 +1,6 @@
 package com.barberia.web;
 
+import com.barberia.seguridad.UsuarioActual;
 import com.barberia.servicio.agenda.BarberoVista;
 import com.barberia.servicio.agenda.CitaVista;
 import com.barberia.servicio.agenda.ConsultaAgendaService;
@@ -34,11 +35,13 @@ public class BarberoController {
         return consultas.horariosDisponibles(barberoId, fecha);
     }
 
-    /** HU-05: calendario del barbero en el día, ordenado por hora. */
+    /** HU-05: calendario del barbero en el día, ordenado por hora. HU-26: un barbero solo ve el suyo. */
     @GetMapping("/{barberoId}/citas")
     public List<CitaVista> calendario(
+            UsuarioActual usuario,
             @PathVariable Long barberoId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+        usuario.verificarAccesoABarbero(barberoId);
         return consultas.calendarioBarbero(barberoId, fecha);
     }
 }

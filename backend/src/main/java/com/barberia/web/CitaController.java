@@ -1,5 +1,6 @@
 package com.barberia.web;
 
+import com.barberia.seguridad.UsuarioActual;
 import com.barberia.servicio.agenda.AgendamientoService;
 import com.barberia.servicio.agenda.CalendarioBarbero;
 import com.barberia.servicio.agenda.CitaVista;
@@ -24,14 +25,20 @@ public class CitaController {
         this.consultas = consultas;
     }
 
-    /** HU-01 / HU-07: agenda la cita si el horario está libre. */
+    /** HU-01 / HU-07: el cliente autenticado agenda su cita si el horario está libre. */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CitaVista agendar(@Valid @RequestBody SolicitudCitaRequest solicitud) {
-        return agendamiento.agendar(solicitud.aSolicitud());
+    public CitaVista agendar(UsuarioActual usuario, @Valid @RequestBody SolicitudCitaRequest solicitud) {
+        return agendamiento.agendar(solicitud.aSolicitud(usuario.id()));
     }
 
-    /** HU-06: calendario general del día, agrupado por barbero. */
+    /** HU-24: el cliente solo ve sus propias citas. */
+    @GetMapping("/mias")
+    public List<CitaVista> misCitas(UsuarioActual usuario) {
+        return consultas.citasDelCliente(usuario.id());
+    }
+
+    /** HU-06: calendario general del día, agrupado por barbero (solo el dueño). */
     @GetMapping
     public List<CalendarioBarbero> calendarioGeneral(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {

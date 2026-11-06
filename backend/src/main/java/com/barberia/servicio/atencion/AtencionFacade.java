@@ -7,6 +7,7 @@ import com.barberia.repositorio.BarberoRepository;
 import com.barberia.repositorio.CitaRepository;
 import com.barberia.repositorio.ClienteRepository;
 import com.barberia.repositorio.CorteRepository;
+import com.barberia.servicio.AccesoDenegadoException;
 import com.barberia.servicio.RecursoNoEncontradoException;
 import com.barberia.servicio.ReglaNegocioException;
 import com.barberia.servicio.agenda.CitaVista;
@@ -51,9 +52,9 @@ public class AtencionFacade {
         this.reloj = reloj;
     }
 
-    /** HU-12: marca la cita como atendida y habilita el registro del corte. */
-    public CitaVista marcarAtendida(Long citaId) {
-        Cita cita = buscarCitaParaAtender(citaId);
+    /** HU-12: el barbero de la cita la marca como atendida y habilita el registro del corte. */
+    public CitaVista marcarAtendida(Long citaId, Long barberoId) {
+        Cita cita = buscarCitaDelBarbero(citaId, barberoId);
         if (cita.getFecha().isAfter(hoy())) {
             throw new ReglaNegocioException("Solo se puede marcar como atendida una cita de hoy o de días anteriores");
         }
@@ -64,9 +65,9 @@ public class AtencionFacade {
         return CitaVista.de(cita, nombreDelCliente(cita.getClienteId()));
     }
 
-    /** HU-27 + HU-13: registra el cobro de una cita atendida y calcula la comisión. */
-    public CorteVista registrarAtencion(Long citaId, String servicio, BigDecimal valorCobrado) {
-        Cita cita = buscarCitaParaAtender(citaId);
+    /** HU-27 + HU-13: el barbero de la cita registra su cobro y se calcula la comisión. */
+    public CorteVista registrarAtencion(Long citaId, Long barberoId, String servicio, BigDecimal valorCobrado) {
+        Cita cita = buscarCitaDelBarbero(citaId, barberoId);
         if (cita.getEstado() != EstadoCita.ATENDIDA) {
             throw new ReglaNegocioException("La cita debe estar marcada como atendida antes de registrar el cobro");
         }
@@ -112,9 +113,14 @@ public class AtencionFacade {
         return clientes.save(new Cliente(datos.nombre().trim(), null, datos.telefono()));
     }
 
-    private Cita buscarCitaParaAtender(Long citaId) {
-        return citas.findByIdParaAtender(citaId)
+    /** HU-26: solo el barbero asignado a la cita puede atenderla. */
+    private Cita buscarCitaDelBarbero(Long citaId, Long barberoId) {
+        Cita cita = citas.findByIdParaAtender(citaId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Cita", citaId));
+        if (!cita.getBarbero().getId().equals(barberoId)) {
+            throw new AccesoDenegadoException("Solo el barbero asignado puede atender esta cita");
+        }
+        return cita;
     }
 
     private String nombreDelCliente(Long clienteId) {
