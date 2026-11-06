@@ -77,7 +77,12 @@ public class Cita {
         if (otra == null || !mismoBarbero(otra) || !fecha.equals(otra.fecha)) {
             return false;
         }
-        return horaInicio.isBefore(otra.horaFin) && otra.horaInicio.isBefore(horaFin);
+        return ocupaFranja(otra.horaInicio, otra.horaFin);
+    }
+
+    /** Indica si la cita ocupa alguna parte de la franja [inicio, fin) del mismo día. */
+    public boolean ocupaFranja(LocalTime inicio, LocalTime fin) {
+        return horaInicio.isBefore(fin) && inicio.isBefore(horaFin);
     }
 
     private boolean mismoBarbero(Cita otra) {

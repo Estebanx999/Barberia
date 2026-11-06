@@ -10,6 +10,10 @@ La base de datos se crea por separado. El backend se conecta con estas variables
 - `DB_USER`
 - `DB_PASSWORD`
 
+## Horario de atención
+Las franjas que se ofrecen al agendar salen de `barberia.horario` en `application.yml`
+(apertura, cierre, duración del turno y zona horaria).
+
 ## Ejecución
 ```bash
 mvn spring-boot:run
@@ -20,9 +24,22 @@ mvn spring-boot:run
 mvn test
 ```
 
+## API de agendamiento
+| Método | Ruta | Historia |
+| --- | --- | --- |
+| GET  | `/api/barberos` | HU-01 (elegir barbero) |
+| GET  | `/api/barberos/{id}/disponibilidad?fecha=AAAA-MM-DD` | HU-02 |
+| POST | `/api/citas` | HU-01, HU-07 |
+| GET  | `/api/barberos/{id}/citas?fecha=AAAA-MM-DD` | HU-05 |
+| GET  | `/api/citas?fecha=AAAA-MM-DD` | HU-06 |
+
 ## Estructura
 ```
 com.barberia
 ├── dominio       entidades del nivel 4 (sin dependencias hacia otras capas)
-└── repositorio   acceso a datos (Spring Data JPA)
+├── repositorio   acceso a datos (Spring Data JPA)
+├── servicio      casos de uso
+│   └── agenda    agendamiento y consultas de agenda
+├── web           controladores REST y manejo de errores
+└── config        configuración (reloj)
 ```

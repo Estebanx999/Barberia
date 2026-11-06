@@ -94,4 +94,13 @@ class CitaTest {
     void noSeCruzaConNulo() {
         assertFalse(cita(DIA, "10:00", "10:30", barbero).seCruzaCon(null));
     }
+
+    @Test
+    void ocupaLaFranjaQueSeSolapaConSuHorario() {
+        Cita base = cita(DIA, "10:00", "10:30", barbero);
+        assertTrue(base.ocupaFranja(LocalTime.of(10, 0), LocalTime.of(10, 30)));
+        assertTrue(base.ocupaFranja(LocalTime.of(10, 15), LocalTime.of(10, 45)));
+        assertFalse(base.ocupaFranja(LocalTime.of(10, 30), LocalTime.of(11, 0)));
+        assertFalse(base.ocupaFranja(LocalTime.of(9, 30), LocalTime.of(10, 0)));
+    }
 }
