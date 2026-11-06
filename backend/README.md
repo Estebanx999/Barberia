@@ -40,15 +40,25 @@ mvn test
 | POST  | `/api/citas/{id}/corte` | HU-27, HU-13 |
 | POST  | `/api/cortes` | HU-28, HU-13 |
 
+## API de gastos y reportes
+| Método | Ruta | Historia |
+| --- | --- | --- |
+| POST | `/api/gastos` | HU-14 |
+| GET  | `/api/reportes/ingresos?desde=AAAA-MM-DD&hasta=AAAA-MM-DD` | HU-15 |
+| GET  | `/api/reportes/gastos?desde=AAAA-MM-DD&hasta=AAAA-MM-DD` | HU-29 |
+| GET  | `/api/reportes/utilidad-neta?desde=AAAA-MM-DD&hasta=AAAA-MM-DD` | HU-16 |
+
 ## Estructura
 ```
 com.barberia
 ├── dominio       entidades del nivel 4 (sin dependencias hacia otras capas)
 ├── repositorio   acceso a datos (Spring Data JPA)
 ├── politica      políticas de comisión (Strategy)
+├── reporte       reportes financieros por periodo (Template Method)
 ├── servicio      casos de uso
 │   ├── agenda    agendamiento y consultas de agenda
-│   └── atencion  flujo de atención (Facade)
+│   ├── atencion  flujo de atención (Facade)
+│   └── gasto     registro de gastos
 ├── web           controladores REST y manejo de errores
 └── config        configuración (reloj)
 ```

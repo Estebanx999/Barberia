@@ -37,7 +37,7 @@ public class Gasto {
         if (valor == null || valor.signum() <= 0) {
             throw new IllegalArgumentException("El valor debe ser mayor que cero");
         }
-        this.concepto = concepto;
+        this.concepto = concepto.trim();
         this.fecha = fecha;
         this.valor = valor;
     }
