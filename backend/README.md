@@ -33,13 +33,22 @@ mvn test
 | GET  | `/api/barberos/{id}/citas?fecha=AAAA-MM-DD` | HU-05 |
 | GET  | `/api/citas?fecha=AAAA-MM-DD` | HU-06 |
 
+## API de atención
+| Método | Ruta | Historia |
+| --- | --- | --- |
+| PATCH | `/api/citas/{id}/atendida` | HU-12 |
+| POST  | `/api/citas/{id}/corte` | HU-27, HU-13 |
+| POST  | `/api/cortes` | HU-28, HU-13 |
+
 ## Estructura
 ```
 com.barberia
 ├── dominio       entidades del nivel 4 (sin dependencias hacia otras capas)
 ├── repositorio   acceso a datos (Spring Data JPA)
+├── politica      políticas de comisión (Strategy)
 ├── servicio      casos de uso
-│   └── agenda    agendamiento y consultas de agenda
+│   ├── agenda    agendamiento y consultas de agenda
+│   └── atencion  flujo de atención (Facade)
 ├── web           controladores REST y manejo de errores
 └── config        configuración (reloj)
 ```

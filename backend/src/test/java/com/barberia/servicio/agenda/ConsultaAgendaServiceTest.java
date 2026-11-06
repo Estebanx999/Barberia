@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalTime;
 import java.util.List;
 
-import static com.barberia.servicio.agenda.DatosDePrueba.*;
+import static com.barberia.soporte.DatosDePrueba.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;

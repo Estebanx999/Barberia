@@ -34,6 +34,12 @@ public class ManejadorErrores extends ResponseEntityExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
     }
 
+    /** Operación que el estado actual de una entidad no permite. */
+    @ExceptionHandler(IllegalStateException.class)
+    public ProblemDetail estadoInvalido(IllegalStateException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
     /** Invariantes del dominio que la solicitud no cumple. */
     @ExceptionHandler(IllegalArgumentException.class)
     public ProblemDetail datosInvalidos(IllegalArgumentException ex) {
