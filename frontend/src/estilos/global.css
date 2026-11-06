@@ -1,0 +1,348 @@
+/* ---------------------------------------------------------------------------
+   Tokens: cuero, latón y hueso, los materiales de una barbería tradicional.
+   El poste rojo y azul se usa solo como franja de identidad.
+--------------------------------------------------------------------------- */
+:root {
+  --cuero: #231f1c;
+  --cuero-profundo: #1a1715;
+  --superficie: #2f2925;
+  --borde: #4a423c;
+  --laton: #c9a15a;
+  --laton-claro: #dcb775;
+  --hueso: #ede6da;
+  --piedra: #a39a8f;
+  --error: #e07a6e;
+  --poste-rojo: #b23a3a;
+  --poste-azul: #2d5da8;
+
+  --fuente: 'Archivo Variable', system-ui, sans-serif;
+  --radio-control: 6px;
+  --radio-tarjeta: 12px;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--cuero);
+  color: var(--hueso);
+  font-family: var(--fuente);
+  font-size: 1rem;
+  line-height: 1.55;
+  font-stretch: 100%;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-stretch: 75%;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.005em;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.25rem);
+}
+
+p {
+  margin: 0;
+  max-width: 65ch;
+}
+
+a {
+  color: var(--laton-claro);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--hueso);
+}
+
+:focus-visible {
+  outline: 2px solid var(--laton-claro);
+  outline-offset: 3px;
+}
+
+/* --- Identidad: la franja del poste de barbero ------------------------- */
+.poste {
+  height: 6px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--poste-rojo) 0 9px,
+    var(--hueso) 9px 18px,
+    var(--poste-azul) 18px 27px,
+    var(--hueso) 27px 36px
+  );
+  background-size: 51px 6px;
+}
+
+.tarjeta-acceso .poste {
+  height: 10px;
+  background-size: 51px 10px;
+  animation: girar-poste 2.4s linear infinite;
+}
+
+@keyframes girar-poste {
+  to {
+    background-position: 51px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta-acceso .poste {
+    animation: none;
+  }
+}
+
+.marca {
+  display: block;
+  font-stretch: 62.5%;
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  color: var(--hueso);
+}
+
+.marca--grande {
+  font-size: clamp(3.5rem, 2rem + 8vw, 8rem);
+}
+
+.marca--pequena {
+  font-size: 1.75rem;
+}
+
+/* --- Controles ---------------------------------------------------------- */
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.6rem 1.25rem;
+  border: 1px solid transparent;
+  border-radius: var(--radio-control);
+  font: inherit;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.boton:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.boton--principal {
+  background: var(--laton);
+  color: var(--cuero-profundo);
+}
+
+.boton--principal:hover:not(:disabled) {
+  background: var(--laton-claro);
+  color: var(--cuero-profundo);
+}
+
+.boton--secundario {
+  background: transparent;
+  border-color: var(--borde);
+  color: var(--hueso);
+}
+
+.boton--secundario:hover {
+  border-color: var(--laton);
+}
+
+.formulario {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.formulario .boton--principal {
+  margin-top: 0.4rem;
+  width: 100%;
+}
+
+.campo {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.campo label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.campo input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-control);
+  background: var(--cuero-profundo);
+  color: var(--hueso);
+  font: inherit;
+}
+
+.campo input:focus-visible {
+  outline-offset: 1px;
+  border-color: var(--laton);
+}
+
+.campo input[aria-invalid='true'] {
+  border-color: var(--error);
+}
+
+.campo__ayuda {
+  font-size: 0.875rem;
+  color: var(--piedra);
+}
+
+.campo__error {
+  font-size: 0.875rem;
+  color: var(--error);
+}
+
+.aviso {
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radio-control);
+  border-left: 4px solid;
+  background: var(--cuero-profundo);
+}
+
+.aviso--error {
+  border-color: var(--error);
+  color: var(--hueso);
+}
+
+.cargando {
+  padding: 3rem 1.5rem;
+  color: var(--piedra);
+}
+
+/* --- Portada de acceso (ingreso y registro) ------------------------------ */
+.portada {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 26rem);
+  align-items: center;
+  gap: clamp(2rem, 6vw, 6rem);
+  padding: clamp(1.5rem, 5vw, 5rem);
+  max-width: 76rem;
+  margin: 0 auto;
+}
+
+.portada__marca {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.portada__lema {
+  font-size: clamp(1.1rem, 1rem + 0.5vw, 1.35rem);
+  color: var(--piedra);
+  max-width: 30ch;
+}
+
+.tarjeta-acceso {
+  background: var(--superficie);
+  border-radius: var(--radio-tarjeta);
+  overflow: hidden;
+}
+
+.tarjeta-acceso__cuerpo {
+  display: grid;
+  gap: 1.5rem;
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+.tarjeta-acceso__pie {
+  color: var(--piedra);
+}
+
+.tarjeta-acceso__nota {
+  font-size: 0.875rem;
+  color: var(--piedra);
+  margin-top: -0.75rem;
+}
+
+@media (max-width: 52rem) {
+  .portada {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    padding: 2rem 1rem;
+    gap: 2rem;
+  }
+
+  .marca--grande {
+    font-size: clamp(3rem, 1.5rem + 9vw, 4.5rem);
+  }
+}
+
+/* --- Marco con sesión ------------------------------------------------- */
+.encabezado {
+  background: var(--cuero-profundo);
+  border-bottom: 1px solid var(--borde);
+}
+
+.encabezado__contenido {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0.85rem 1rem;
+}
+
+.encabezado__usuario {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.encabezado__rol {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--laton-claro);
+}
+
+.contenido {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) 1rem;
+}
+
+.panel {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.panel p {
+  color: var(--piedra);
+  font-size: 1.1rem;
+}
+
+.mensaje {
+  display: grid;
+  justify-items: start;
+  gap: 1rem;
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 4rem 1rem;
+}
+
+.mensaje p {
+  color: var(--piedra);
+}
