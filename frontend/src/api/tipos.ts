@@ -104,3 +104,49 @@ export interface CorteSinCita extends Cobro {
   clienteNombre?: string;
   clienteTelefono?: string;
 }
+
+/** HU-06: citas de un barbero dentro del calendario general. */
+export interface CalendarioBarbero {
+  barberoId: number;
+  barberoNombre: string;
+  citas: Cita[];
+}
+
+export interface DatosGasto {
+  concepto: string;
+  fecha: string;
+  valor: number;
+}
+
+export interface Gasto extends DatosGasto {
+  id: number;
+}
+
+/** HU-15 */
+export interface ReporteIngresos {
+  periodo: Periodo;
+  cantidadCortes: number;
+  ingresosBrutos: number;
+}
+
+export interface GastoPorConcepto {
+  concepto: string;
+  cantidad: number;
+  total: number;
+}
+
+/** HU-29 */
+export interface ReporteGastos {
+  periodo: Periodo;
+  totalGastos: number;
+  detalle: GastoPorConcepto[];
+}
+
+/** HU-16 */
+export interface ReporteUtilidadNeta {
+  periodo: Periodo;
+  ingresosBrutos: number;
+  comisionesPagadas: number;
+  gastosOperativos: number;
+  utilidadNeta: number;
+}

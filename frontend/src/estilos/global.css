@@ -770,7 +770,7 @@ h2 {
     grid-column: 1 / -1;
   }
 
-  .tabla thead {
+  .tabla:not(.tabla--simple) thead {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -778,7 +778,7 @@ h2 {
     clip: rect(0 0 0 0);
   }
 
-  .tabla tr {
+  .tabla:not(.tabla--simple) tr {
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 0.15rem 1rem;
@@ -786,35 +786,35 @@ h2 {
     border-bottom: 1px solid var(--borde);
   }
 
-  .tabla td {
+  .tabla:not(.tabla--simple) td {
     padding: 0;
     border: 0;
   }
 
-  .tabla td:nth-child(1) {
+  .tabla:not(.tabla--simple) td:nth-child(1) {
     grid-area: 1 / 1;
     color: var(--piedra);
   }
 
-  .tabla td:nth-child(2) {
+  .tabla:not(.tabla--simple) td:nth-child(2) {
     grid-area: 2 / 1;
   }
 
-  .tabla td:nth-child(3) {
+  .tabla:not(.tabla--simple) td:nth-child(3) {
     grid-area: 3 / 1;
     color: var(--piedra);
   }
 
-  .tabla td:nth-child(4) {
+  .tabla:not(.tabla--simple) td:nth-child(4) {
     grid-area: 1 / 2;
   }
 
-  .tabla td:nth-child(5) {
+  .tabla:not(.tabla--simple) td:nth-child(5) {
     grid-area: 2 / 2;
     color: var(--laton-claro);
   }
 
-  .tabla td.numero::before {
+  .tabla:not(.tabla--simple) td.numero::before {
     content: attr(data-etiqueta) ' ';
     color: var(--piedra);
     font-size: 0.85rem;
@@ -830,5 +830,167 @@ h2 {
 
   .encabezado__usuario {
     margin-left: auto;
+  }
+}
+
+/* --- Panel del dueño ---------------------------------------------------- */
+.sillas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.silla {
+  border-radius: var(--radio-tarjeta);
+  background: var(--superficie);
+  overflow: hidden;
+}
+
+.silla__barbero {
+  padding: 0.85rem 1rem 0.75rem;
+  font-size: 1.25rem;
+  border-bottom: 2px solid var(--laton);
+}
+
+.silla__libre {
+  padding: 1rem;
+  color: var(--piedra);
+}
+
+.silla__citas {
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem 0;
+}
+
+.turno {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  gap: 0 0.75rem;
+  padding: 0.55rem 1rem;
+}
+
+.turno + .turno {
+  border-top: 1px solid var(--borde);
+}
+
+.turno__hora {
+  grid-row: span 2;
+  font-stretch: 62.5%;
+  font-weight: 800;
+  font-size: 1.45rem;
+  line-height: 1.1;
+  color: var(--laton-claro);
+}
+
+.turno__cliente {
+  font-weight: 600;
+}
+
+.turno__estado {
+  font-size: 0.85rem;
+  color: var(--piedra);
+}
+
+.turno--atendida .turno__hora {
+  color: var(--piedra);
+}
+
+.dos-columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 24rem) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.tarjeta {
+  padding: 1.5rem;
+  border-radius: var(--radio-tarjeta);
+  background: var(--superficie);
+}
+
+.tabla--simple tfoot th,
+.tabla--simple tfoot td {
+  border-bottom: 0;
+  color: var(--hueso);
+  font-weight: 700;
+}
+
+.filtros {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.rango {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 14rem));
+  gap: 1rem;
+}
+
+.reporte {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 40rem;
+  padding: 1.5rem;
+  border-radius: var(--radio-tarjeta);
+  background: var(--superficie);
+}
+
+.reporte__periodo {
+  color: var(--piedra);
+}
+
+/* Utilidad neta como una cuenta: cada línea resta y el total cierra abajo. */
+.cuenta {
+  margin: 0;
+  display: grid;
+}
+
+.cuenta__fila {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px dashed var(--borde);
+}
+
+.cuenta__fila dt {
+  color: var(--piedra);
+}
+
+.cuenta__fila dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.cuenta__total {
+  border-bottom: 0;
+  border-top: 2px solid var(--hueso);
+  margin-top: 0.35rem;
+  padding-top: 0.9rem;
+}
+
+.cuenta__total dt {
+  color: var(--hueso);
+  font-weight: 700;
+}
+
+.cuenta__total dd {
+  font-stretch: 75%;
+  font-weight: 800;
+  font-size: 1.9rem;
+  color: var(--laton-claro);
+}
+
+.cuenta__total--negativa dd {
+  color: var(--error);
+}
+
+@media (max-width: 52rem) {
+  .dos-columnas {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

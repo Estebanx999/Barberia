@@ -7,7 +7,7 @@ export const INICIO_POR_ROL: Record<Rol, string> = {
   DUENO: '/dueno',
 };
 
-/** Secciones del menú de cada rol; se completan módulo a módulo. */
+/** Secciones del menú de cada rol. */
 export const NAVEGACION: Record<Rol, { ruta: string; texto: string }[]> = {
   CLIENTE: [
     { ruta: '/cliente', texto: 'Mis citas' },
@@ -18,7 +18,13 @@ export const NAVEGACION: Record<Rol, { ruta: string; texto: string }[]> = {
     { ruta: '/barbero/sin-cita', texto: 'Corte sin cita' },
     { ruta: '/barbero/comisiones', texto: 'Mis comisiones' },
   ],
-  DUENO: [],
+  DUENO: [
+    { ruta: '/dueno', texto: 'Operación del día' },
+    { ruta: '/dueno/mi-agenda', texto: 'Mi agenda' },
+    { ruta: '/dueno/sin-cita', texto: 'Corte sin cita' },
+    { ruta: '/dueno/gastos', texto: 'Gastos' },
+    { ruta: '/dueno/reportes', texto: 'Reportes' },
+  ],
 };
 
 export const NOMBRE_ROL: Record<Rol, string> = {

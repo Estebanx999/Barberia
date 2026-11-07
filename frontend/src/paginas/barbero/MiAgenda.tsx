@@ -4,9 +4,11 @@ import { calendarioBarbero, marcarAtendida, misCortes, registrarCobro } from '..
 import { ErrorApi } from '../../api/cliente';
 import type { Cita, Corte } from '../../api/tipos';
 import { CamposCobro, type ErroresCobro, type ValoresCobro } from '../../componentes/CamposCobro';
+import { SelectorDia } from '../../componentes/SelectorDia';
+import { INICIO_POR_ROL } from '../../rutas/rutasPorRol';
 import { useSesion } from '../../sesion/useSesion';
 import { pesos, parteDe } from '../../utilidades/dinero';
-import { fechaLarga, hora, hoyISO, sumarDias } from '../../utilidades/fechas';
+import { hora, hoyISO } from '../../utilidades/fechas';
 import { useCarga } from '../../utilidades/useCarga';
 import { validarCobro } from './validarCobro';
 
@@ -42,27 +44,12 @@ export function MiAgenda() {
     <section className="pagina">
       <div className="pagina__titulo">
         <h1>Mi agenda</h1>
-        <Link to="/barbero/sin-cita" className="boton boton--secundario">
+        <Link to={`${INICIO_POR_ROL[usuario!.rol]}/sin-cita`} className="boton boton--secundario">
           Registrar corte sin cita
         </Link>
       </div>
 
-      <div className="selector-dia">
-        <button type="button" className="boton boton--secundario" onClick={() => cambiarDia(sumarDias(fecha, -1))}>
-          Día anterior
-        </button>
-        <p className="selector-dia__fecha" aria-live="polite">
-          {fechaLarga(fecha)}
-        </p>
-        <button type="button" className="boton boton--secundario" onClick={() => cambiarDia(sumarDias(fecha, 1))}>
-          Día siguiente
-        </button>
-        {fecha !== hoy && (
-          <button type="button" className="boton boton--enlace" onClick={() => cambiarDia(hoy)}>
-            Volver a hoy
-          </button>
-        )}
-      </div>
+      <SelectorDia fecha={fecha} alCambiar={cambiarDia} />
 
       {aviso && (
         <p className={`aviso aviso--${aviso.tipo}`} role={aviso.tipo === 'error' ? 'alert' : 'status'}>

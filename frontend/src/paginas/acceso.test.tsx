@@ -45,16 +45,18 @@ describe('inicio de sesión (HU-22, HU-23, HU-24)', () => {
     expect(await screen.findByRole('heading', { name: 'Mi agenda' })).toBeInTheDocument();
   });
 
-  it('lleva al dueño a su panel', async () => {
-    simularApi({ 'POST /api/auth/login': { cuerpo: { token: 'abc', usuario: usuario('DUENO') } } });
+  it('lleva al dueño a la operación del día', async () => {
+    simularApi({
+      'POST /api/auth/login': { cuerpo: { token: 'abc', usuario: usuario('DUENO') } },
+      'GET /api/citas': { cuerpo: [] },
+    });
     montarApp('/ingresar');
 
     await userEvent.type(screen.getByLabelText('Correo'), 'juan@correo.com');
     await userEvent.type(screen.getByLabelText('Contraseña'), 'secreta123');
     await userEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
 
-    expect(await screen.findByText(/Desde aquí ves la operación del día/)).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Hola, Juan' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Operación del día' })).toBeInTheDocument();
     expect(leerToken()).toBe('abc');
   });
 
