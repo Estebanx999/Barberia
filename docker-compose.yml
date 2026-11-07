@@ -1,0 +1,50 @@
+# Despliegue completo: PostgreSQL, backend (Spring Boot) y frontend (Nginx).
+# Uso: copiar .env.example como .env, ajustar los valores y ejecutar
+#   docker compose up -d --build
+# La aplicación queda en http://localhost:8080 (o el PUERTO_WEB del .env).
+
+name: barberia
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: barberia
+      POSTGRES_USER: barberia
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en el archivo .env}
+    volumes:
+      - datos-postgres:/var/lib/postgresql/data
+      # Solo se ejecutan la primera vez, cuando el volumen está vacío.
+      - ./database/barberia.sql:/docker-entrypoint-initdb.d/01-esquema.sql:ro
+      - ./database/datos_iniciales.sql:/docker-entrypoint-initdb.d/02-datos-iniciales.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U barberia -d barberia"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/barberia
+      DB_USER: barberia
+      DB_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en el archivo .env}
+      JWT_SECRETO: ${JWT_SECRETO:?Define JWT_SECRETO (mínimo 32 caracteres) en el archivo .env}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    environment:
+      BACKEND_URL: http://backend:8080
+    ports:
+      - "${PUERTO_WEB:-8080}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  datos-postgres:
