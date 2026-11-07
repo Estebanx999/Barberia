@@ -30,18 +30,30 @@ describe('inicio de sesión (HU-22, HU-23, HU-24)', () => {
     expect(leerToken()).toBe('abc');
   });
 
-  it.each([
-    ['BARBERO', 'Desde aquí ves tu agenda del día'],
-    ['DUENO', 'Desde aquí ves la operación del día'],
-  ] as const)('lleva al %s a su panel', async (rol, textoDelPanel) => {
-    simularApi({ 'POST /api/auth/login': { cuerpo: { token: 'abc', usuario: usuario(rol) } } });
+  it('lleva al barbero a su agenda', async () => {
+    simularApi({
+      'POST /api/auth/login': { cuerpo: { token: 'abc', usuario: usuario('BARBERO') } },
+      'GET /api/barberos/7/citas': { cuerpo: [] },
+      'GET /api/cortes/mios': { cuerpo: { periodo: {}, cantidadCortes: 0, totalCobrado: 0, totalComision: 0, cortes: [] } },
+    });
     montarApp('/ingresar');
 
     await userEvent.type(screen.getByLabelText('Correo'), 'juan@correo.com');
     await userEvent.type(screen.getByLabelText('Contraseña'), 'secreta123');
     await userEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
 
-    expect(await screen.findByText(new RegExp(textoDelPanel))).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Mi agenda' })).toBeInTheDocument();
+  });
+
+  it('lleva al dueño a su panel', async () => {
+    simularApi({ 'POST /api/auth/login': { cuerpo: { token: 'abc', usuario: usuario('DUENO') } } });
+    montarApp('/ingresar');
+
+    await userEvent.type(screen.getByLabelText('Correo'), 'juan@correo.com');
+    await userEvent.type(screen.getByLabelText('Contraseña'), 'secreta123');
+    await userEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+
+    expect(await screen.findByText(/Desde aquí ves la operación del día/)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Hola, Juan' })).toBeInTheDocument();
     expect(leerToken()).toBe('abc');
   });

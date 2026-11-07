@@ -52,3 +52,55 @@ export interface DatosRegistro {
   telefono: string;
   contrasena: string;
 }
+
+export interface Comision {
+  montoBarbero: number;
+  montoDueno: number;
+  porcentajeBarbero: number;
+  porcentajeDueno: number;
+}
+
+export interface Corte {
+  id: number;
+  fecha: string;
+  servicio: string;
+  valorCobrado: number;
+  tieneCitaPrevia: boolean;
+  citaId: number | null;
+  barberoId: number;
+  barberoNombre: string;
+  clienteId: number;
+  clienteNombre: string | null;
+  comision: Comision;
+}
+
+export interface Periodo {
+  desde: string;
+  hasta: string;
+}
+
+export interface ResumenCortes {
+  periodo: Periodo;
+  cantidadCortes: number;
+  totalCobrado: number;
+  totalComision: number;
+  cortes: Corte[];
+}
+
+export interface ClienteResumen {
+  id: number;
+  nombre: string;
+  telefono: string | null;
+}
+
+export interface Cobro {
+  servicio: string;
+  valorCobrado: number;
+}
+
+/** Cliente de un corte sin cita: uno ya registrado (clienteId) o uno nuevo. */
+export interface CorteSinCita extends Cobro {
+  clienteId?: number;
+  clienteNombre?: string;
+  clienteTelefono?: string;
+}

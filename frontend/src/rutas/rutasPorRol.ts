@@ -13,7 +13,11 @@ export const NAVEGACION: Record<Rol, { ruta: string; texto: string }[]> = {
     { ruta: '/cliente', texto: 'Mis citas' },
     { ruta: '/cliente/agendar', texto: 'Agendar cita' },
   ],
-  BARBERO: [],
+  BARBERO: [
+    { ruta: '/barbero', texto: 'Mi agenda' },
+    { ruta: '/barbero/sin-cita', texto: 'Corte sin cita' },
+    { ruta: '/barbero/comisiones', texto: 'Mis comisiones' },
+  ],
   DUENO: [],
 };
 

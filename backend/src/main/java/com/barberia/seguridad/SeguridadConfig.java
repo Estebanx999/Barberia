@@ -53,6 +53,7 @@ public class SeguridadConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/citas/*/atendida").hasAnyRole("BARBERO", "DUENO")
                         .requestMatchers(HttpMethod.POST, "/api/citas/*/corte", "/api/cortes").hasAnyRole("BARBERO", "DUENO")
                         .requestMatchers(HttpMethod.GET, "/api/cortes/mios").hasAnyRole("BARBERO", "DUENO")
+                        .requestMatchers(HttpMethod.GET, "/api/clientes").hasAnyRole("BARBERO", "DUENO")
                         // Módulo contable
                         .requestMatchers("/api/gastos/**", "/api/reportes/**").hasRole("DUENO")
                         .anyRequest().denyAll())

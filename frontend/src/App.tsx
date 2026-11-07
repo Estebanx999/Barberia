@@ -1,5 +1,8 @@
 import { Route, Routes } from 'react-router-dom';
 import { MarcoApp } from './componentes/MarcoApp';
+import { MiAgenda } from './paginas/barbero/MiAgenda';
+import { MisComisiones } from './paginas/barbero/MisComisiones';
+import { RegistrarCorteSinCita } from './paginas/barbero/RegistrarCorteSinCita';
 import { AgendarCita } from './paginas/cliente/AgendarCita';
 import { MisCitas } from './paginas/cliente/MisCitas';
 import { InicioSesion } from './paginas/InicioSesion';
@@ -22,7 +25,9 @@ export function App() {
           <Route path="/cliente/agendar" element={<AgendarCita />} />
         </Route>
         <Route element={<RutaProtegida roles={['BARBERO']} />}>
-          <Route path="/barbero" element={<Panel />} />
+          <Route path="/barbero" element={<MiAgenda />} />
+          <Route path="/barbero/sin-cita" element={<RegistrarCorteSinCita />} />
+          <Route path="/barbero/comisiones" element={<MisComisiones />} />
         </Route>
         <Route element={<RutaProtegida roles={['DUENO']} />}>
           <Route path="/dueno" element={<Panel />} />
