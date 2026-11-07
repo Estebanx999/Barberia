@@ -1,0 +1,3 @@
+# Los scripts del wrapper necesitan su fin de línea nativo en cada sistema.
+mvnw text eol=lf
+mvnw.cmd text eol=crlf

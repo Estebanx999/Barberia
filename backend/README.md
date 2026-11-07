@@ -1,6 +1,6 @@
 # Backend – Sistema de gestión de barbería (MVP)
 
-Java 21 · Spring Boot · PostgreSQL · Maven
+Java 17 · Spring Boot · PostgreSQL · Maven (incluido con el wrapper `mvnw`)
 
 ## Conexión a la base de datos
 La base de datos se crea por separado. El backend se conecta con estas variables
@@ -32,14 +32,17 @@ Las franjas que se ofrecen al agendar salen de `barberia.horario` en `applicatio
 (apertura, cierre, duración del turno y zona horaria).
 
 ## Ejecución
-```bash
-mvn spring-boot:run
+```powershell
+.\mvnw.cmd spring-boot:run   # Windows
+./mvnw spring-boot:run       # Linux o macOS
 ```
 
 ## Pruebas
-```bash
-mvn test
+```powershell
+.\mvnw.cmd test   # Windows
+./mvnw test       # Linux o macOS
 ```
+La primera vez, el wrapper descarga Maven; no hace falta instalarlo.
 
 ## API de autenticación
 | Método | Ruta | Historia |
