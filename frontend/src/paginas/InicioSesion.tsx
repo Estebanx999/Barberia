@@ -64,7 +64,6 @@ export function InicioSesion() {
       <p className="tarjeta-acceso__pie">
         ¿Vienes por primera vez? <Link to="/registro">Crea tu cuenta de cliente</Link>
       </p>
-      <p className="tarjeta-acceso__nota">Las cuentas de barberos las entrega el dueño.</p>
     </PortadaAcceso>
   );
 }

@@ -248,12 +248,6 @@ a:hover {
   gap: 1.5rem;
 }
 
-.portada__lema {
-  font-size: clamp(1.1rem, 1rem + 0.5vw, 1.35rem);
-  color: var(--piedra);
-  max-width: 30ch;
-}
-
 .tarjeta-acceso {
   background: var(--superficie);
   border-radius: var(--radio-tarjeta);
@@ -268,12 +262,6 @@ a:hover {
 
 .tarjeta-acceso__pie {
   color: var(--piedra);
-}
-
-.tarjeta-acceso__nota {
-  font-size: 0.875rem;
-  color: var(--piedra);
-  margin-top: -0.75rem;
 }
 
 @media (max-width: 52rem) {
