@@ -1,5 +1,5 @@
 # Publicación en Render (https://render.com) con un Blueprint:
-# Render lee este archivo del repositorio y crea la base y los dos servicios.
+# Render lee este archivo del repositorio y crea la base y el servicio.
 # Pasos y comandos en el README, sección "Publicación en la nube".
 
 databases:
@@ -11,13 +11,13 @@ databases:
     postgresMajorVersion: "16"
 
 services:
+  # Un solo servicio: el backend sirve la API y la aplicación web (Dockerfile de la raíz).
+  # Al abrir la página se despierta todo junto; en el plan gratuito tarda 1 a 2 minutos.
   - type: web
     name: barberia-backend
     runtime: docker
     plan: free
     region: virginia
-    rootDir: backend
-    # Con rootDir, las rutas de Docker son relativas a esa carpeta.
     dockerfilePath: ./Dockerfile
     dockerContext: .
     envVars:
@@ -29,21 +29,6 @@ services:
         generateValue: true
       - key: PORT
         value: "8080"
+      # Arranque más rápido con poca CPU: compila menos al iniciar.
       - key: JAVA_TOOL_OPTIONS
-        value: "-XX:MaxRAMPercentage=75"
-
-  - type: web
-    name: barberia-web
-    runtime: docker
-    plan: free
-    region: virginia
-    rootDir: frontend
-    # Con rootDir, las rutas de Docker son relativas a esa carpeta.
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
-    envVars:
-      # Dirección pública del backend, por ejemplo https://barberia-backend.onrender.com
-      - key: BACKEND_URL
-        sync: false
-      - key: PORT
-        value: "80"
+        value: "-XX:MaxRAMPercentage=75 -XX:TieredStopAtLevel=1"

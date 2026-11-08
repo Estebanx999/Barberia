@@ -4,6 +4,7 @@ import com.barberia.dominio.Dueno;
 import com.barberia.dominio.Rol;
 import com.barberia.servicio.AccesoDenegadoException;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -84,6 +85,16 @@ class SeguridadTest {
     void unClienteNoAccedeALaInformacionDeUnBarbero() {
         assertThrows(AccesoDenegadoException.class,
                 () -> new UsuarioActual(7L, Rol.CLIENTE).verificarAccesoABarbero(2L));
+    }
+
+    @Test
+    void lasPaginasDelFrontendSonPublicasPeroLaApiNo() {
+        assertTrue(SeguridadConfig.esPaginaDelFrontend(new MockHttpServletRequest("GET", "/")));
+        assertTrue(SeguridadConfig.esPaginaDelFrontend(new MockHttpServletRequest("GET", "/cliente/agendar")));
+        assertTrue(SeguridadConfig.esPaginaDelFrontend(new MockHttpServletRequest("GET", "/assets/index.js")));
+        assertFalse(SeguridadConfig.esPaginaDelFrontend(new MockHttpServletRequest("GET", "/api/citas")));
+        assertFalse(SeguridadConfig.esPaginaDelFrontend(new MockHttpServletRequest("GET", "/api")));
+        assertFalse(SeguridadConfig.esPaginaDelFrontend(new MockHttpServletRequest("POST", "/cliente")));
     }
 
     private JwtDecoder sinValidarVigencia() {

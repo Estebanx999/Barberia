@@ -1,6 +1,7 @@
 package com.barberia.seguridad;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -57,10 +58,18 @@ public class SeguridadConfig {
                         .requestMatchers(HttpMethod.GET, "/api/clientes").hasAnyRole("BARBERO", "DUENO")
                         // Módulo contable
                         .requestMatchers("/api/gastos/**", "/api/reportes/**").hasRole("DUENO")
+                        // Páginas y archivos del frontend, cuando el backend los sirve (despliegue en la nube)
+                        .requestMatchers(SeguridadConfig::esPaginaDelFrontend).permitAll()
                         .anyRequest().denyAll())
                 .oauth2ResourceServer(servidor -> servidor
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(convertidorDeRoles())));
         return http.build();
+    }
+
+    /** Cualquier GET fuera de /api/ es una página o un archivo de la aplicación web, que son públicos. */
+    static boolean esPaginaDelFrontend(HttpServletRequest solicitud) {
+        String ruta = solicitud.getRequestURI().substring(solicitud.getContextPath().length());
+        return HttpMethod.GET.matches(solicitud.getMethod()) && !ruta.equals("/api") && !ruta.startsWith("/api/");
     }
 
     @Bean

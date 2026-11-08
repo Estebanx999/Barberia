@@ -8,7 +8,7 @@ Sistema de gestión de citas y control contable para una barbería (MVP, Release
 | `frontend` | Aplicación web en React con TypeScript (ver `frontend/README.md`) |
 | `database` | Esquema PostgreSQL y cuentas iniciales |
 | `docker-compose.yml` | Despliegue completo con Docker |
-| `render.yaml` | Publicación en la nube (Render) |
+| `render.yaml`, `Dockerfile` | Publicación en la nube (Render), en un solo servicio |
 
 ## Despliegue con Docker Compose
 
@@ -43,29 +43,27 @@ o empiecen de cero con `docker compose down -v` y `docker compose up -d --build`
 
 ## Publicación en la nube (Render)
 
-`render.yaml` describe lo que se crea en Render: una base PostgreSQL 16, el backend y el
-frontend, cada uno con su Dockerfile. El frontend reenvía `/api` al backend, como en local.
+`render.yaml` describe lo que se crea en Render: una base PostgreSQL 16 y **un solo servicio**,
+construido con el `Dockerfile` de la raíz, en el que el backend sirve la API y también la
+aplicación web. Así, al abrir la página se despierta todo junto.
 
 1. Suban el código a GitHub (Render lo toma de la rama principal).
 2. En [dashboard.render.com](https://dashboard.render.com): **New → Blueprint**, conecten el
-   repositorio y elijan esta carpeta. Render pedirá `BACKEND_URL`: escriban
-   `https://barberia-backend.onrender.com`.
+   repositorio y elijan esta carpeta.
 3. Cuando la base esté lista, copien su **External Database URL** (base `barberia-db` →
-   *Connect*) y carguen el esquema y las cuentas iniciales desde esta carpeta:
+   *Connect* → *External*) y carguen el esquema y las cuentas iniciales desde esta carpeta:
 
    ```powershell
    docker run --rm -v "${PWD}\database:/sql" postgres:16 psql "URL_EXTERNA" -f /sql/barberia.sql -f /sql/datos_iniciales.sql
    ```
 
-4. En el servicio `barberia-backend` usen **Manual Deploy → Restart service** para que arranque
-   con la base ya creada.
-5. La aplicación queda en la dirección del servicio `barberia-web`.
+4. En el servicio `barberia-backend` usen **Manual Deploy → Deploy latest commit** para que
+   arranque con la base ya creada.
+5. La aplicación queda en la dirección del servicio `barberia-backend`.
 
-Si Render le asigna al backend otra dirección (por ejemplo con un sufijo), corrijan
-`BACKEND_URL` en *Environment* del servicio `barberia-web`.
-
-En el plan gratuito los servicios se duermen tras 15 minutos sin uso (la primera visita tarda
-cerca de un minuto) y la base de datos vence a los 30 días.
+En el plan gratuito el servicio se duerme tras 15 minutos sin uso: al abrir la página Render
+muestra una pantalla de espera y la aplicación aparece sola en 1 a 2 minutos. Ábranla unos
+minutos antes de una presentación. La base de datos gratuita vence a los 30 días.
 
 ## Levantar todo en desarrollo (Windows)
 
