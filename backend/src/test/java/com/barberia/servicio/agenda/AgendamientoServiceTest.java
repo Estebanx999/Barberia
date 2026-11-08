@@ -3,6 +3,7 @@ package com.barberia.servicio.agenda;
 import com.barberia.dominio.Barbero;
 import com.barberia.dominio.Cita;
 import com.barberia.dominio.EstadoCita;
+import com.barberia.dominio.Servicio;
 import com.barberia.repositorio.BarberoRepository;
 import com.barberia.repositorio.CitaRepository;
 import com.barberia.repositorio.ClienteRepository;
@@ -42,11 +43,15 @@ class AgendamientoServiceTest {
     }
 
     private SolicitudCita solicitud(String hora) {
-        return new SolicitudCita(1L, 2L, DIA, LocalTime.parse(hora));
+        return solicitud(hora, Servicio.CORTE);
+    }
+
+    private SolicitudCita solicitud(String hora, Servicio servicioPedido) {
+        return new SolicitudCita(1L, 2L, servicioPedido, DIA, LocalTime.parse(hora));
     }
 
     @Test
-    void agendaEnHorarioLibreConLaDuracionDelTurno() {
+    void agendaEnHorarioLibreConLaDuracionDelServicio() {
         when(citas.findByBarberoIdAndFecha(2L, DIA)).thenReturn(List.of());
 
         CitaVista cita = servicio.agendar(solicitud("10:00"));
@@ -56,7 +61,37 @@ class AgendamientoServiceTest {
         assertEquals(EstadoCita.AGENDADA, cita.estado());
         assertEquals("Juan", cita.clienteNombre());
         assertEquals("Carlos", cita.barberoNombre());
+        assertEquals(Servicio.CORTE, cita.servicio());
         verify(citas).save(any(Cita.class));
+    }
+
+    @Test
+    void corteYBarbaOcupaUnaHora() {
+        when(citas.findByBarberoIdAndFecha(2L, DIA)).thenReturn(List.of());
+
+        CitaVista cita = servicio.agendar(solicitud("10:00", Servicio.CORTE_Y_BARBA));
+
+        assertEquals(LocalTime.of(11, 0), cita.horaFin());
+        assertEquals("Corte y barba", cita.servicioNombre());
+    }
+
+    @Test
+    void rechazaUnServicioLargoQueAlcanzaLaSiguienteCita() {
+        when(citas.findByBarberoIdAndFecha(2L, DIA)).thenReturn(List.of(cita(3, carlos, 7, "10:30")));
+
+        var error = assertThrows(HorarioNoDisponibleException.class,
+                () -> servicio.agendar(solicitud("10:00", Servicio.CORTE_Y_BARBA)));
+
+        assertTrue(error.getHorariosDisponibles().stream()
+                .noneMatch(f -> f.horaInicio().equals(LocalTime.of(10, 0))));
+        verify(citas, never()).save(any());
+    }
+
+    @Test
+    void rechazaUnServicioQueTerminaDespuesDelCierre() {
+        assertThrowsExactly(ReglaNegocioException.class,
+                () -> servicio.agendar(solicitud("19:30", Servicio.CORTE_Y_BARBA)));
+        verify(citas, never()).save(any());
     }
 
     @Test
@@ -83,9 +118,9 @@ class AgendamientoServiceTest {
         when(barberos.findByIdParaAgendar(98L)).thenReturn(Optional.empty());
 
         assertThrows(RecursoNoEncontradoException.class,
-                () -> servicio.agendar(new SolicitudCita(99L, 2L, DIA, LocalTime.of(10, 0))));
+                () -> servicio.agendar(new SolicitudCita(99L, 2L, Servicio.CORTE, DIA, LocalTime.of(10, 0))));
         assertThrows(RecursoNoEncontradoException.class,
-                () -> servicio.agendar(new SolicitudCita(1L, 98L, DIA, LocalTime.of(10, 0))));
+                () -> servicio.agendar(new SolicitudCita(1L, 98L, Servicio.CORTE, DIA, LocalTime.of(10, 0))));
     }
 
     @Test
@@ -97,7 +132,7 @@ class AgendamientoServiceTest {
 
     @Test
     void rechazaFechasPasadas() {
-        var ayer = new SolicitudCita(1L, 2L, DIA.minusDays(1), LocalTime.of(10, 0));
+        var ayer = new SolicitudCita(1L, 2L, Servicio.CORTE, DIA.minusDays(1), LocalTime.of(10, 0));
         assertThrowsExactly(ReglaNegocioException.class, () -> servicio.agendar(ayer));
         verify(citas, never()).save(any());
     }

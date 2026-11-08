@@ -15,7 +15,7 @@ class CorteYGastoTest {
     private final Barbero barbero = new Barbero("Carlos", null, null);
 
     private Cita cita() {
-        return new Cita(DIA, LocalTime.of(10, 0), LocalTime.of(10, 30), CLIENTE, barbero);
+        return new Cita(DIA, LocalTime.of(10, 0), Servicio.CORTE, CLIENTE, barbero);
     }
 
     @Test

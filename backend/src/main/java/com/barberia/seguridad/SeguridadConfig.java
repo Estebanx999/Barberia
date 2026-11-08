@@ -44,7 +44,8 @@ public class SeguridadConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/registro", "/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/**").authenticated()
                         // Agenda
-                        .requestMatchers(HttpMethod.GET, "/api/barberos", "/api/barberos/*/disponibilidad").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/barberos", "/api/barberos/*/disponibilidad", "/api/servicios")
+                        .authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/citas").hasRole("CLIENTE")
                         .requestMatchers(HttpMethod.GET, "/api/citas/mias").hasRole("CLIENTE")
                         .requestMatchers(HttpMethod.GET, "/api/citas").hasRole("DUENO")

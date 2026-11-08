@@ -34,21 +34,37 @@ public record HorarioAtencion(
         }
     }
 
-    /** Franjas consecutivas desde la apertura; solo las que terminan antes o justo al cierre. */
+    /** Franjas de un turno cada una, consecutivas desde la apertura. */
     public List<Franja> franjas() {
+        return franjas(duracionTurno);
+    }
+
+    /**
+     * Franjas para un servicio de la duración indicada: empiezan cada turno desde
+     * la apertura y solo se incluyen las que terminan antes o justo al cierre.
+     */
+    public List<Franja> franjas(Duration duracion) {
         List<Franja> franjas = new ArrayList<>();
         LocalTime inicio = apertura;
-        while (cabeEnJornada(inicio)) {
-            LocalTime fin = inicio.plus(duracionTurno);
-            franjas.add(new Franja(inicio, fin));
-            inicio = fin;
+        while (cabeEnJornada(inicio, duracion)) {
+            franjas.add(new Franja(inicio, inicio.plus(duracion)));
+            LocalTime siguiente = inicio.plus(duracionTurno);
+            if (!siguiente.isAfter(inicio)) {
+                break;
+            }
+            inicio = siguiente;
         }
         return franjas;
     }
 
-    /** Un turno que empieza en inicio cabe si termina dentro de la jornada (sin pasar de medianoche). */
+    /** Un turno que empieza en inicio cabe si termina dentro de la jornada. */
     public boolean cabeEnJornada(LocalTime inicio) {
-        LocalTime fin = inicio.plus(duracionTurno);
+        return cabeEnJornada(inicio, duracionTurno);
+    }
+
+    /** Un servicio cabe si empieza desde la apertura y termina a más tardar al cierre, sin pasar de medianoche. */
+    public boolean cabeEnJornada(LocalTime inicio, Duration duracion) {
+        LocalTime fin = inicio.plus(duracion);
         return !inicio.isBefore(apertura) && fin.isAfter(inicio) && !fin.isAfter(cierre);
     }
 }

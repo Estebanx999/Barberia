@@ -13,14 +13,17 @@ interface Props {
   opciones: Opcion[];
   seleccionada: string | null;
   alElegir: (valor: string) => void;
-  variante?: 'lista' | 'fila' | 'rejilla';
+  variante?: 'lista' | 'fila' | 'rejilla' | 'tarjetas';
+  /** Texto bajo la leyenda, por ejemplo para indicar qué falta elegir. */
+  ayuda?: string;
 }
 
 /** Grupo de opciones de selección única, con radios nativos para teclado y lectores de pantalla. */
-export function GrupoOpciones({ leyenda, nombre, opciones, seleccionada, alElegir, variante = 'lista' }: Props) {
+export function GrupoOpciones({ leyenda, nombre, opciones, seleccionada, alElegir, variante = 'lista', ayuda }: Props) {
   return (
     <fieldset className="grupo">
       <legend className="grupo__leyenda">{leyenda}</legend>
+      {ayuda && <p className="grupo__ayuda">{ayuda}</p>}
       <div className={`opciones opciones--${variante}`}>
         {opciones.map((opcion) => (
           <label key={opcion.valor} className="opcion">

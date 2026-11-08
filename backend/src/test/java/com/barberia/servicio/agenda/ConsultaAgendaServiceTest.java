@@ -1,6 +1,7 @@
 package com.barberia.servicio.agenda;
 
 import com.barberia.dominio.Barbero;
+import com.barberia.dominio.Servicio;
 import com.barberia.repositorio.BarberoRepository;
 import com.barberia.repositorio.CitaRepository;
 import com.barberia.repositorio.ClienteRepository;
@@ -67,7 +68,7 @@ class ConsultaAgendaServiceTest {
         when(barberos.existsById(2L)).thenReturn(true);
         when(citas.findByBarberoIdAndFecha(2L, DIA)).thenReturn(List.of(cita(1, carlos, 5, "09:00")));
 
-        List<Franja> libres = servicio.horariosDisponibles(2L, DIA);
+        List<Franja> libres = servicio.horariosDisponibles(2L, DIA, Servicio.CORTE);
 
         assertEquals(23, libres.size());
         assertTrue(libres.stream().noneMatch(f -> f.horaInicio().equals(LocalTime.of(9, 0))));
@@ -76,13 +77,26 @@ class ConsultaAgendaServiceTest {
     @Test
     void barberoInexistenteResponde404() {
         when(barberos.existsById(99L)).thenReturn(false);
-        assertThrows(RecursoNoEncontradoException.class, () -> servicio.horariosDisponibles(99L, DIA));
+        assertThrows(RecursoNoEncontradoException.class, () -> servicio.horariosDisponibles(99L, DIA, Servicio.CORTE));
         assertThrows(RecursoNoEncontradoException.class, () -> servicio.calendarioBarbero(99L, DIA));
     }
 
     @Test
-    void listaLosBarberosParaElegir() {
-        assertEquals(List.of(new BarberoVista(1L, "Andrés"), new BarberoVista(2L, "Carlos")),
+    void listaLosBarberosConSuPerfil() {
+        carlos.actualizarPerfil("Especialista en degradados", " ");
+
+        assertEquals(List.of(
+                        new BarberoVista(1L, "Andrés", null, null),
+                        new BarberoVista(2L, "Carlos", "Especialista en degradados", null)),
                 servicio.listarBarberos());
+    }
+
+    @Test
+    void listaLosServiciosConSuDuracion() {
+        List<ServicioVista> servicios = servicio.listarServicios();
+
+        assertEquals(List.of(Servicio.CORTE, Servicio.BARBA, Servicio.CORTE_Y_BARBA),
+                servicios.stream().map(ServicioVista::codigo).toList());
+        assertEquals(60, servicios.get(2).duracionMinutos());
     }
 }

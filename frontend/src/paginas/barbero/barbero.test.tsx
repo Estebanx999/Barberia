@@ -15,6 +15,8 @@ const cita = (cambios: Partial<Cita>): Cita => ({
   fecha: hoy,
   horaInicio: '10:00:00',
   horaFin: '10:30:00',
+  servicio: 'CORTE',
+  servicioNombre: 'Corte de cabello',
   estado: 'AGENDADA',
   barberoId: 2,
   barberoNombre: 'Carlos Ramírez',
@@ -107,6 +109,9 @@ describe('agenda del barbero (HU-05, HU-12, HU-27)', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'Registrar cobro' }));
     const formulario = screen.getByRole('form', { name: 'Cobro de la cita de Juan Pérez' });
+    // El servicio llega lleno con el que reservó el cliente; el barbero puede ajustarlo.
+    expect(within(formulario).getByLabelText('Servicio')).toHaveValue('Corte de cabello');
+    await userEvent.clear(within(formulario).getByLabelText('Servicio'));
     await userEvent.type(within(formulario).getByLabelText('Servicio'), 'Corte clásico');
     await userEvent.type(within(formulario).getByLabelText('Valor cobrado'), '30.000');
     await userEvent.click(within(formulario).getByRole('button', { name: 'Guardar cobro' }));
@@ -123,6 +128,7 @@ describe('agenda del barbero (HU-05, HU-12, HU-27)', () => {
     montarApp('/barbero');
 
     await userEvent.click(await screen.findByRole('button', { name: 'Registrar cobro' }));
+    await userEvent.clear(screen.getByLabelText('Servicio'));
     await userEvent.click(screen.getByRole('button', { name: 'Guardar cobro' }));
 
     expect(screen.getByText('Escribe el servicio que hiciste.')).toBeInTheDocument();

@@ -1,6 +1,7 @@
 package com.barberia.servicio.agenda;
 
 import com.barberia.dominio.Cita;
+import com.barberia.dominio.Servicio;
 import com.barberia.dominio.Usuario;
 import com.barberia.repositorio.BarberoRepository;
 import com.barberia.repositorio.CitaRepository;
@@ -10,13 +11,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Consultas de la agenda: barberos disponibles para elegir, franjas libres
+ * Consultas de la agenda: barberos y servicios para elegir, franjas libres
  * (HU-02), calendario de un barbero (HU-05) y calendario general (HU-06).
  * Solo lee; el agendamiento está en AgendamientoService.
  */
@@ -41,14 +43,20 @@ public class ConsultaAgendaService {
 
     public List<BarberoVista> listarBarberos() {
         return barberos.findAllByOrderByNombre().stream()
-                .map(barbero -> new BarberoVista(barbero.getId(), barbero.getNombre()))
+                .map(BarberoVista::de)
                 .toList();
     }
 
-    /** HU-02: solo las franjas libres del barbero en ese día. */
-    public List<Franja> horariosDisponibles(Long barberoId, LocalDate fecha) {
+    /** Servicios que se pueden reservar, con el tiempo que ocupa cada uno. */
+    public List<ServicioVista> listarServicios() {
+        return Arrays.stream(Servicio.values()).map(ServicioVista::de).toList();
+    }
+
+    /** HU-02: franjas del día en las que el servicio cabe sin cruzarse con las citas del barbero. */
+    public List<Franja> horariosDisponibles(Long barberoId, LocalDate fecha, Servicio servicio) {
         verificarBarbero(barberoId);
-        return disponibilidad.franjasLibres(fecha, citas.findByBarberoIdAndFecha(barberoId, fecha));
+        return disponibilidad.franjasLibres(
+                fecha, citas.findByBarberoIdAndFecha(barberoId, fecha), servicio.getDuracion());
     }
 
     /** HU-05: citas del barbero en el día, ordenadas por hora. */

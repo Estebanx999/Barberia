@@ -31,6 +31,7 @@ export function proximosDias(cantidad: number, desde = hoyISO()): string[] {
 
 const DIA_SEMANA = new Intl.DateTimeFormat('es-CO', { weekday: 'short' });
 const DIA_MES = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short' });
+const MES_CORTO = new Intl.DateTimeFormat('es-CO', { month: 'short' });
 const FECHA_LARGA = new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
 
 const sinPunto = (texto: string) => texto.replace('.', '');
@@ -44,6 +45,25 @@ export function nombreDia(iso: string, hoy = hoyISO()): string {
 
 export function diaYMes(iso: string): string {
   return sinPunto(DIA_MES.format(desdeISO(iso)));
+}
+
+/** Número del día del mes: "15". */
+export function numeroDia(iso: string): string {
+  return String(desdeISO(iso).getDate());
+}
+
+/** Día y mes con el mes en minúscula: "15 de nov". */
+export function fechaCorta(iso: string): string {
+  const fecha = desdeISO(iso);
+  return `${fecha.getDate()} de ${sinPunto(MES_CORTO.format(fecha))}`;
+}
+
+/** Duración legible: 30 → "30 min", 60 → "1 h", 90 → "1 h 30 min". */
+export function duracion(minutos: number): string {
+  const horas = Math.floor(minutos / 60);
+  const resto = minutos % 60;
+  if (horas === 0) return `${resto} min`;
+  return resto === 0 ? `${horas} h` : `${horas} h ${resto} min`;
 }
 
 export function fechaLarga(iso: string): string {

@@ -2,6 +2,7 @@ package com.barberia.web;
 
 import com.barberia.dominio.EstadoCita;
 import com.barberia.dominio.Rol;
+import com.barberia.dominio.Servicio;
 import com.barberia.servicio.RecursoNoEncontradoException;
 import com.barberia.servicio.ReglaNegocioException;
 import com.barberia.servicio.agenda.*;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CitaControllerTest {
 
     private static final String SOLICITUD = """
-            {"barberoId": 2, "fecha": "2026-11-10", "horaInicio": "10:00"}
+            {"barberoId": 2, "servicio": "CORTE_Y_BARBA", "fecha": "2026-11-10", "horaInicio": "10:00"}
             """;
 
     private final AgendamientoService agendamiento = mock(AgendamientoService.class);
@@ -50,14 +51,17 @@ class CitaControllerTest {
     @Test
     void agendarRespondeCreated() throws Exception {
         when(agendamiento.agendar(any())).thenReturn(new CitaVista(10L, LocalDate.of(2026, 11, 10),
-                LocalTime.of(10, 0), LocalTime.of(10, 30), EstadoCita.AGENDADA, 2L, "Carlos", 1L, "Juan"));
+                LocalTime.of(10, 0), LocalTime.of(11, 0), Servicio.CORTE_Y_BARBA, "Corte y barba",
+                EstadoCita.AGENDADA, 2L, "Carlos", 1L, "Juan"));
 
         enviar(SOLICITUD)
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(10))
-                .andExpect(jsonPath("$.estado").value("AGENDADA"));
+                .andExpect(jsonPath("$.estado").value("AGENDADA"))
+                .andExpect(jsonPath("$.servicioNombre").value("Corte y barba"));
         // El cliente de la cita es el usuario autenticado, no un dato del cuerpo.
-        verify(agendamiento).agendar(argThat(solicitud -> solicitud.clienteId().equals(1L)));
+        verify(agendamiento).agendar(argThat(solicitud -> solicitud.clienteId().equals(1L)
+                && solicitud.servicio() == Servicio.CORTE_Y_BARBA));
     }
 
     @Test
@@ -81,6 +85,14 @@ class CitaControllerTest {
     void solicitudIncompletaRespondeBadRequest() throws Exception {
         enviar("""
                 {"barberoId": 2}
+                """).andExpect(status().isBadRequest());
+        verifyNoInteractions(agendamiento);
+    }
+
+    @Test
+    void servicioDesconocidoRespondeBadRequest() throws Exception {
+        enviar("""
+                {"barberoId": 2, "servicio": "TINTE", "fecha": "2026-11-10", "horaInicio": "10:00"}
                 """).andExpect(status().isBadRequest());
         verifyNoInteractions(agendamiento);
     }

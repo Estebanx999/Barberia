@@ -8,8 +8,13 @@ import { hoyISO, sumarDias } from '../../utilidades/fechas';
 
 const juan: Usuario = { id: 7, nombre: 'Juan Pérez', correo: 'juan@correo.com', telefono: '300', rol: 'CLIENTE' };
 const barberos = [
-  { id: 2, nombre: 'Carlos' },
-  { id: 3, nombre: 'Andrés' },
+  { id: 2, nombre: 'Carlos', descripcion: 'Especialista en degradados', fotoUrl: null },
+  { id: 3, nombre: 'Andrés', descripcion: null, fotoUrl: null },
+];
+const servicios = [
+  { codigo: 'CORTE', nombre: 'Corte de cabello', duracionMinutos: 30 },
+  { codigo: 'BARBA', nombre: 'Perfilado de barba', duracionMinutos: 30 },
+  { codigo: 'CORTE_Y_BARBA', nombre: 'Corte y barba', duracionMinutos: 60 },
 ];
 const manana = sumarDias(hoyISO(), 1);
 
@@ -18,6 +23,8 @@ const cita = (cambios: Partial<Cita>): Cita => ({
   fecha: manana,
   horaInicio: '10:00:00',
   horaFin: '10:30:00',
+  servicio: 'CORTE',
+  servicioNombre: 'Corte de cabello',
   estado: 'AGENDADA',
   barberoId: 2,
   barberoNombre: 'Carlos',
@@ -30,6 +37,7 @@ function api(extra: Record<string, RespuestaSimulada> = {}) {
   return simularApi({
     'GET /api/auth/yo': { cuerpo: juan },
     'GET /api/barberos': { cuerpo: barberos },
+    'GET /api/servicios': { cuerpo: servicios },
     'GET /api/citas/mias': { cuerpo: [] },
     ...extra,
   });
@@ -38,7 +46,18 @@ function api(extra: Record<string, RespuestaSimulada> = {}) {
 beforeEach(() => guardarToken('token-cliente'));
 
 describe('agendar cita (HU-01, HU-02, HU-07)', () => {
-  it('muestra solo los horarios libres del barbero y el día elegidos', async () => {
+  it('muestra el perfil de cada barbero sin su rol', async () => {
+    api();
+    montarApp('/cliente/agendar');
+
+    const grupo = await screen.findByRole('group', { name: 'Elige tu barbero' });
+    expect(within(grupo).getByText('Especialista en degradados')).toBeInTheDocument();
+    // Sin foto se muestran las iniciales.
+    expect(within(grupo).getByText('C')).toBeInTheDocument();
+    expect(within(grupo).queryByText(/dueño/i)).not.toBeInTheDocument();
+  });
+
+  it('muestra solo las horas en que cabe el servicio con el barbero y el día elegidos', async () => {
     const fetch = api({
       'GET /api/barberos/2/disponibilidad': {
         cuerpo: [
@@ -50,11 +69,13 @@ describe('agendar cita (HU-01, HU-02, HU-07)', () => {
     montarApp('/cliente/agendar');
 
     await userEvent.click(await screen.findByRole('radio', { name: 'Carlos' }));
+    expect(screen.getByText('Elige un servicio para ver en qué horas cabe.')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('radio', { name: 'Corte y barba' }));
 
     const horas = await screen.findByRole('group', { name: 'Hora' });
     expect(within(horas).getAllByRole('radio').map((r) => (r as HTMLInputElement).value)).toEqual(['09:00', '10:30']);
     const consulta = fetch.mock.calls.find(([url]) => String(url).includes('/disponibilidad'))!;
-    expect(consulta[0]).toBe(`/api/barberos/2/disponibilidad?fecha=${hoyISO()}`);
+    expect(consulta[0]).toBe(`/api/barberos/2/disponibilidad?fecha=${hoyISO()}&servicio=CORTE_Y_BARBA`);
   });
 
   it('agenda la cita y confirma en Mis citas', async () => {
@@ -65,13 +86,23 @@ describe('agendar cita (HU-01, HU-02, HU-07)', () => {
     montarApp('/cliente/agendar');
 
     await userEvent.click(await screen.findByRole('radio', { name: 'Carlos' }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Corte de cabello' }));
     await userEvent.click(screen.getByRole('radio', { name: /^Mañana/ }));
     await userEvent.click(await screen.findByRole('radio', { name: '10:00' }));
+    expect(screen.getByText('Corte de cabello · 30 min con Carlos')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Agendar cita' }));
 
-    expect(await screen.findByRole('status')).toHaveTextContent(/Tu cita quedó agendada: .* a las 10:00 con Carlos/);
+    const confirmacion = await screen.findByRole('status', { name: 'Cita agendada' });
+    expect(confirmacion).toHaveTextContent('¡Cita agendada con éxito!');
+    expect(confirmacion).toHaveTextContent('Corte de cabello');
+    expect(confirmacion).toHaveTextContent(/, 10:00/);
     const envio = fetch.mock.calls.find(([, init]) => init?.method === 'POST')!;
-    expect(JSON.parse(envio[1]!.body as string)).toEqual({ barberoId: 2, fecha: manana, horaInicio: '10:00' });
+    expect(JSON.parse(envio[1]!.body as string)).toEqual({
+      barberoId: 2,
+      servicio: 'CORTE',
+      fecha: manana,
+      horaInicio: '10:00',
+    });
   });
 
   it('si el horario se ocupó, muestra los que siguen libres', async () => {
@@ -88,6 +119,7 @@ describe('agendar cita (HU-01, HU-02, HU-07)', () => {
     montarApp('/cliente/agendar');
 
     await userEvent.click(await screen.findByRole('radio', { name: 'Carlos' }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Corte de cabello' }));
     await userEvent.click(await screen.findByRole('radio', { name: '10:00' }));
     await userEvent.click(screen.getByRole('button', { name: 'Agendar cita' }));
 
@@ -102,8 +134,11 @@ describe('agendar cita (HU-01, HU-02, HU-07)', () => {
     montarApp('/cliente/agendar');
 
     await userEvent.click(await screen.findByRole('radio', { name: 'Andrés' }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Perfilado de barba' }));
 
-    expect(await screen.findByText('No quedan horarios libres este día. Prueba con otro día.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('No quedan horarios libres este día para este servicio. Prueba con otro día.'),
+    ).toBeInTheDocument();
   });
 
   it('no permite agendar sin elegir la hora', async () => {
@@ -117,7 +152,7 @@ describe('agendar cita (HU-01, HU-02, HU-07)', () => {
 });
 
 describe('mis citas (HU-24)', () => {
-  it('separa las próximas de las anteriores', async () => {
+  it('separa las próximas del historial y muestra el servicio', async () => {
     api({
       'GET /api/citas/mias': {
         cuerpo: [
@@ -128,11 +163,12 @@ describe('mis citas (HU-24)', () => {
     });
     montarApp('/cliente');
 
-    const proximas = await screen.findByRole('region', { name: 'Próximas' });
-    expect(within(proximas).getByText('con Carlos')).toBeInTheDocument();
-    expect(within(proximas).getByText('10:00 – 10:30')).toBeInTheDocument();
-    const anteriores = screen.getByRole('region', { name: 'Anteriores' });
-    expect(within(anteriores).getByText('Atendida')).toBeInTheDocument();
+    const proximas = await screen.findByRole('region', { name: 'Próximas (1)' });
+    expect(within(proximas).getByText('Carlos')).toBeInTheDocument();
+    expect(within(proximas).getByText(/^Corte de cabello · Mañana .*, 10:00$/)).toBeInTheDocument();
+    expect(within(proximas).getByText('Confirmada')).toBeInTheDocument();
+    const historial = screen.getByRole('region', { name: 'Historial' });
+    expect(within(historial).getByText('Atendida')).toBeInTheDocument();
   });
 
   it('invita a agendar cuando no hay citas', async () => {

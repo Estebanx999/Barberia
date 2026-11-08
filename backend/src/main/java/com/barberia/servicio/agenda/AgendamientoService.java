@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 /**
@@ -54,20 +53,23 @@ public class AgendamientoService {
 
         validarHorario(solicitud);
 
-        LocalTime horaFin = solicitud.horaInicio().plus(horario.duracionTurno());
-        Cita nueva = new Cita(solicitud.fecha(), solicitud.horaInicio(), horaFin, cliente.getId(), barbero);
+        Cita nueva = new Cita(solicitud.fecha(), solicitud.horaInicio(), solicitud.servicio(),
+                cliente.getId(), barbero);
 
         List<Cita> citasDelDia = citas.findByBarberoIdAndFecha(barbero.getId(), solicitud.fecha());
         if (citasDelDia.stream().anyMatch(nueva::seCruzaCon)) {
-            throw new HorarioNoDisponibleException(
-                    disponibilidad.franjasLibres(solicitud.fecha(), citasDelDia));
+            throw new HorarioNoDisponibleException(disponibilidad.franjasLibres(
+                    solicitud.fecha(), citasDelDia, solicitud.servicio().getDuracion()));
         }
 
         return CitaVista.de(citas.save(nueva), cliente.getNombre());
     }
 
     private void validarHorario(SolicitudCita solicitud) {
-        if (!horario.cabeEnJornada(solicitud.horaInicio())) {
+        if (solicitud.servicio() == null) {
+            throw new IllegalArgumentException("El servicio es obligatorio");
+        }
+        if (!horario.cabeEnJornada(solicitud.horaInicio(), solicitud.servicio().getDuracion())) {
             throw new ReglaNegocioException("El horario está fuera de la jornada de atención ("
                     + horario.apertura() + " a " + horario.cierre() + ")");
         }

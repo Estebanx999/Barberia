@@ -22,6 +22,8 @@ CREATE TABLE usuario (
     correo   VARCHAR(160),
     telefono VARCHAR(30),
     contrasena_hash VARCHAR(100),
+    descripcion VARCHAR(300),
+    foto_url    VARCHAR(500),
     CONSTRAINT ck_usuario_tipo   CHECK (tipo IN ('CLIENTE', 'BARBERO', 'DUENO')),
     CONSTRAINT ck_usuario_nombre CHECK (btrim(nombre) <> ''),
     CONSTRAINT uq_usuario_correo UNIQUE (correo)
@@ -29,6 +31,8 @@ CREATE TABLE usuario (
 
 COMMENT ON TABLE  usuario      IS 'Personas del sistema: clientes, barberos y dueño';
 COMMENT ON COLUMN usuario.tipo IS 'CLIENTE, BARBERO o DUENO';
+COMMENT ON COLUMN usuario.descripcion IS 'Perfil del barbero que ve el cliente al agendar; nulo para clientes';
+COMMENT ON COLUMN usuario.foto_url    IS 'Enlace a la foto del barbero; sin foto se muestran sus iniciales';
 COMMENT ON COLUMN usuario.contrasena_hash IS 'Hash BCrypt; nulo si el usuario no tiene cuenta (cliente registrado en un corte sin cita)';
 
 ALTER TABLE usuario ADD CONSTRAINT ck_usuario_cuenta_con_correo CHECK (contrasena_hash IS NULL OR correo IS NOT NULL);
@@ -41,11 +45,13 @@ CREATE TABLE cita (
     fecha       DATE        NOT NULL,
     hora_inicio TIME        NOT NULL,
     hora_fin    TIME        NOT NULL,
+    servicio    VARCHAR(20) NOT NULL,
     estado      VARCHAR(20) NOT NULL DEFAULT 'AGENDADA',
     cliente_id  BIGINT      NOT NULL,
     barbero_id  BIGINT      NOT NULL,
     CONSTRAINT fk_cita_cliente FOREIGN KEY (cliente_id) REFERENCES usuario (id),
     CONSTRAINT fk_cita_barbero FOREIGN KEY (barbero_id) REFERENCES usuario (id),
+    CONSTRAINT ck_cita_servicio CHECK (servicio IN ('CORTE', 'BARBA', 'CORTE_Y_BARBA')),
     CONSTRAINT ck_cita_estado  CHECK (estado IN ('AGENDADA', 'ATENDIDA')),
     CONSTRAINT ck_cita_horas   CHECK (hora_fin > hora_inicio)
 );
@@ -54,7 +60,8 @@ CREATE INDEX ix_cita_barbero_fecha ON cita (barbero_id, fecha);
 CREATE INDEX ix_cita_fecha         ON cita (fecha, hora_inicio);
 
 COMMENT ON TABLE  cita        IS 'Citas agendadas; el cruce de horario (RN-04) se valida en la aplicación';
-COMMENT ON COLUMN cita.estado IS 'AGENDADA o ATENDIDA';
+COMMENT ON COLUMN cita.servicio IS 'CORTE (30 min), BARBA (30 min) o CORTE_Y_BARBA (60 min); define hora_fin';
+COMMENT ON COLUMN cita.estado   IS 'AGENDADA o ATENDIDA';
 
 -- -----------------------------------------------------------------------------
 -- Comisiones (HU-13, RN-01, RN-02): reparto del valor cobrado de un corte.

@@ -7,13 +7,11 @@ export function PortadaAcceso({ titulo, children }: { titulo: string; children: 
     <div className="portada">
       <section className="portada__marca">
         <Marca />
+        <p className="portada__lema">Gestión de citas y comisiones</p>
       </section>
       <section className="tarjeta-acceso" aria-labelledby="titulo-acceso">
-        <div className="poste" aria-hidden="true" />
-        <div className="tarjeta-acceso__cuerpo">
-          <h1 id="titulo-acceso">{titulo}</h1>
-          {children}
-        </div>
+        <h1 id="titulo-acceso">{titulo}</h1>
+        {children}
       </section>
     </div>
   );

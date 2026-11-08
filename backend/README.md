@@ -54,12 +54,17 @@ La primera vez, el wrapper descarga Maven; no hace falta instalarlo.
 ## API de agendamiento
 | Método | Ruta | Historia |
 | --- | --- | --- |
-| GET  | `/api/barberos` | HU-01 (elegir barbero) |
-| GET  | `/api/barberos/{id}/disponibilidad?fecha=AAAA-MM-DD` | HU-02 |
+| GET  | `/api/barberos` | HU-01 (elegir barbero: nombre, descripción y foto) |
+| GET  | `/api/servicios` | HU-01 (corte 30 min, barba 30 min, corte y barba 60 min) |
+| GET  | `/api/barberos/{id}/disponibilidad?fecha=AAAA-MM-DD&servicio=CORTE_Y_BARBA` | HU-02 |
 | POST | `/api/citas` | HU-01, HU-07 |
 | GET  | `/api/citas/mias` | HU-24 |
 | GET  | `/api/barberos/{id}/citas?fecha=AAAA-MM-DD` | HU-05 |
 | GET  | `/api/citas?fecha=AAAA-MM-DD` | HU-06 |
+
+Al agendar se envía el servicio: `{"barberoId":2,"servicio":"CORTE","fecha":"2026-11-10","horaInicio":"10:00"}`.
+La hora de fin la define la duración del servicio, y solo se ofrecen las horas en las que el
+servicio completo cabe sin cruzarse con otra cita (RN-04).
 
 ## API de atención
 | Método | Ruta | Historia |

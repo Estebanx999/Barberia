@@ -44,12 +44,29 @@ export function MiAgenda() {
     <section className="pagina">
       <div className="pagina__titulo">
         <h1>Mi agenda</h1>
-        <Link to={`${INICIO_POR_ROL[usuario!.rol]}/sin-cita`} className="boton boton--secundario">
-          Registrar corte sin cita
+        <Link to={`${INICIO_POR_ROL[usuario!.rol]}/sin-cita`} className="boton boton--dorado">
+          + Registrar corte sin cita
         </Link>
       </div>
 
       <SelectorDia fecha={fecha} alCambiar={cambiarDia} />
+
+      {citas.datos && cortes.datos && (
+        <dl className="cifras" aria-label="Resumen del día">
+          <div>
+            <dt>Citas</dt>
+            <dd>{citas.datos.length}</dd>
+          </div>
+          <div>
+            <dt>Cortes cobrados</dt>
+            <dd>{cortes.datos.cantidadCortes}</dd>
+          </div>
+          <div className="cifras__destacada">
+            <dt>Tu parte</dt>
+            <dd>{pesos(cortes.datos.cortes.reduce((total, c) => total + parteDe(usuario!.rol, c.comision), 0))}</dd>
+          </div>
+        </dl>
+      )}
 
       {aviso && (
         <p className={`aviso aviso--${aviso.tipo}`} role={aviso.tipo === 'error' ? 'alert' : 'status'}>
@@ -104,7 +121,7 @@ interface PropsFila {
 function FilaCita({ cita, corte, sePuedeAtender, alAtender, alCobrar, alFallar }: PropsFila) {
   const [cobrando, setCobrando] = useState(false);
   const [enviando, setEnviando] = useState(false);
-  const [valores, setValores] = useState<ValoresCobro>({ servicio: '', valor: '' });
+  const [valores, setValores] = useState<ValoresCobro>({ servicio: cita.servicioNombre, valor: '' });
   const [errores, setErrores] = useState<ErroresCobro>({});
 
   const mensajeDe = (causa: unknown) =>
@@ -148,8 +165,10 @@ function FilaCita({ cita, corte, sePuedeAtender, alAtender, alCobrar, alFallar }
     <li className="cita cita--agenda" aria-label={`${hora(cita.horaInicio)} ${cliente}`}>
       <span className="cita__hora-grande">{hora(cita.horaInicio)}</span>
       <span className="cita__detalle">
-        <span className="cita__hora">{cliente}</span>
-        <span className="texto-tenue">hasta las {hora(cita.horaFin)}</span>
+        <span className="cita__titulo">{cliente}</span>
+        <span className="texto-tenue">
+          {cita.servicioNombre} · hasta las {hora(cita.horaFin)}
+        </span>
       </span>
 
       <span className="cita__acciones">

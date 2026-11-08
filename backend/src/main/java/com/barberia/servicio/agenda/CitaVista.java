@@ -2,6 +2,7 @@ package com.barberia.servicio.agenda;
 
 import com.barberia.dominio.Cita;
 import com.barberia.dominio.EstadoCita;
+import com.barberia.dominio.Servicio;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -12,6 +13,8 @@ public record CitaVista(
         LocalDate fecha,
         LocalTime horaInicio,
         LocalTime horaFin,
+        Servicio servicio,
+        String servicioNombre,
         EstadoCita estado,
         Long barberoId,
         String barberoNombre,
@@ -24,6 +27,8 @@ public record CitaVista(
                 cita.getFecha(),
                 cita.getHoraInicio(),
                 cita.getHoraFin(),
+                cita.getServicio(),
+                cita.getServicio().getNombre(),
                 cita.getEstado(),
                 cita.getBarbero().getId(),
                 cita.getBarbero().getNombre(),

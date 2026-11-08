@@ -8,6 +8,7 @@ Sistema de gestión de citas y control contable para una barbería (MVP, Release
 | `frontend` | Aplicación web en React con TypeScript (ver `frontend/README.md`) |
 | `database` | Esquema PostgreSQL y cuentas iniciales |
 | `docker-compose.yml` | Despliegue completo con Docker |
+| `render.yaml` | Publicación en la nube (Render) |
 
 ## Despliegue con Docker Compose
 
@@ -30,6 +31,41 @@ La base de datos y el backend no se publican fuera de Docker; solo el frontend.
 | Detener y borrar los datos | `docker compose down -v` |
 
 Los scripts de `database/` solo se ejecutan la primera vez, cuando el volumen de datos está vacío.
+Si la base se creó con una versión anterior, actualícenla sin perder datos:
+
+```powershell
+docker compose cp database\actualizar_servicio_y_perfil.sql db:/tmp/actualizar.sql
+docker compose exec db psql -U barberia -d barberia -f /tmp/actualizar.sql
+docker compose restart backend
+```
+
+o empiecen de cero con `docker compose down -v` y `docker compose up -d --build`.
+
+## Publicación en la nube (Render)
+
+`render.yaml` describe lo que se crea en Render: una base PostgreSQL 16, el backend y el
+frontend, cada uno con su Dockerfile. El frontend reenvía `/api` al backend, como en local.
+
+1. Suban el código a GitHub (Render lo toma de la rama principal).
+2. En [dashboard.render.com](https://dashboard.render.com): **New → Blueprint**, conecten el
+   repositorio y elijan esta carpeta. Render pedirá `BACKEND_URL`: escriban
+   `https://barberia-backend.onrender.com`.
+3. Cuando la base esté lista, copien su **External Database URL** (base `barberia-db` →
+   *Connect*) y carguen el esquema y las cuentas iniciales desde esta carpeta:
+
+   ```powershell
+   docker run --rm -v "${PWD}\database:/sql" postgres:16 psql "URL_EXTERNA" -f /sql/barberia.sql -f /sql/datos_iniciales.sql
+   ```
+
+4. En el servicio `barberia-backend` usen **Manual Deploy → Restart service** para que arranque
+   con la base ya creada.
+5. La aplicación queda en la dirección del servicio `barberia-web`.
+
+Si Render le asigna al backend otra dirección (por ejemplo con un sufijo), corrijan
+`BACKEND_URL` en *Environment* del servicio `barberia-web`.
+
+En el plan gratuito los servicios se duermen tras 15 minutos sin uso (la primera visita tarda
+cerca de un minuto) y la base de datos vence a los 30 días.
 
 ## Levantar todo en desarrollo (Windows)
 
@@ -55,13 +91,19 @@ secreto de los tokens (`JWT_SECRETO`) se genera al azar para la sesión si no es
 
 Contraseña de las tres cuentas: `Barberia2026` (cámbienla antes de usar datos reales).
 
-| Rol | Correo |
-| --- | --- |
-| Dueño | dueno@barberia.com |
-| Barbero | barbero1@barberia.com |
-| Barbero | barbero2@barberia.com |
+| Rol | Nombre | Correo |
+| --- | --- | --- |
+| Dueño | Mateo Herrera | dueno@barberia.com |
+| Barbero | Carlos Ramírez | barbero1@barberia.com |
+| Barbero | Luis Peña | barbero2@barberia.com |
 
-Los clientes crean su cuenta desde la pantalla de ingreso.
+Los clientes crean su cuenta desde la pantalla de ingreso. Al agendar ven el perfil de cada
+barbero (nombre, descripción y foto). Para ponerle foto a un barbero se guarda el enlace de la
+imagen; sin foto se muestran sus iniciales:
+
+```sql
+UPDATE usuario SET foto_url = 'https://...' WHERE correo = 'barbero1@barberia.com';
+```
 
 ## Base de datos a mano
 

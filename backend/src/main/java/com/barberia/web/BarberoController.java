@@ -1,5 +1,6 @@
 package com.barberia.web;
 
+import com.barberia.dominio.Servicio;
 import com.barberia.seguridad.UsuarioActual;
 import com.barberia.servicio.agenda.BarberoVista;
 import com.barberia.servicio.agenda.CitaVista;
@@ -27,12 +28,13 @@ public class BarberoController {
         return consultas.listarBarberos();
     }
 
-    /** HU-02: franjas libres del barbero en el día. */
+    /** HU-02: horas del día en las que el barbero puede atender el servicio elegido. */
     @GetMapping("/{barberoId}/disponibilidad")
     public List<Franja> disponibilidad(
             @PathVariable Long barberoId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
-        return consultas.horariosDisponibles(barberoId, fecha);
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+            @RequestParam(defaultValue = "CORTE") Servicio servicio) {
+        return consultas.horariosDisponibles(barberoId, fecha, servicio);
     }
 
     /** HU-05: calendario del barbero en el día, ordenado por hora. HU-26: un barbero solo ve el suyo. */

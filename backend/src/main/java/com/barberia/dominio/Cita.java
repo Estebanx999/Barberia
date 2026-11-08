@@ -8,6 +8,7 @@ import java.time.LocalTime;
 /**
  * Cita agendada (HU-01, 05, 06, 07, 12). Agrupa su estado y su regla de cruce
  * de horario (RN-04), ambas sobre la misma entidad.
+ * La hora de fin la define la duración del servicio reservado.
  * Guarda clienteId en lugar de referenciar a Cliente para evitar la
  * dependencia circular Cita ↔ Cliente.
  */
@@ -30,6 +31,10 @@ public class Cita {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
+    private Servicio servicio;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private EstadoCita estado;
 
     @Column(name = "cliente_id", nullable = false)
@@ -43,19 +48,24 @@ public class Cita {
         // requerido por JPA
     }
 
-    public Cita(LocalDate fecha, LocalTime horaInicio, LocalTime horaFin, Long clienteId, Barbero barbero) {
-        if (fecha == null || horaInicio == null || horaFin == null) {
-            throw new IllegalArgumentException("Fecha y horas son obligatorias");
+    public Cita(LocalDate fecha, LocalTime horaInicio, Servicio servicio, Long clienteId, Barbero barbero) {
+        if (fecha == null || horaInicio == null) {
+            throw new IllegalArgumentException("Fecha y hora son obligatorias");
         }
-        if (!horaFin.isAfter(horaInicio)) {
-            throw new IllegalArgumentException("La hora de fin debe ser posterior a la de inicio");
+        if (servicio == null) {
+            throw new IllegalArgumentException("El servicio es obligatorio");
         }
         if (clienteId == null || barbero == null) {
             throw new IllegalArgumentException("La cita requiere cliente y barbero");
         }
+        LocalTime horaFin = horaInicio.plus(servicio.getDuracion());
+        if (!horaFin.isAfter(horaInicio)) {
+            throw new IllegalArgumentException("La cita debe terminar el mismo día en que empieza");
+        }
         this.fecha = fecha;
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
+        this.servicio = servicio;
         this.clienteId = clienteId;
         this.barbero = barbero;
         this.estado = EstadoCita.AGENDADA;
@@ -107,6 +117,10 @@ public class Cita {
 
     public LocalTime getHoraFin() {
         return horaFin;
+    }
+
+    public Servicio getServicio() {
+        return servicio;
     }
 
     public EstadoCita getEstado() {

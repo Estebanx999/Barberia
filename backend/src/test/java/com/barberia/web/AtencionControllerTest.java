@@ -2,6 +2,7 @@ package com.barberia.web;
 
 import com.barberia.dominio.EstadoCita;
 import com.barberia.dominio.Rol;
+import com.barberia.dominio.Servicio;
 import com.barberia.reporte.Periodo;
 import com.barberia.servicio.AccesoDenegadoException;
 import com.barberia.servicio.ReglaNegocioException;
@@ -61,7 +62,7 @@ class AtencionControllerTest {
     @Test
     void marcarAtendidaRespondeOk() throws Exception {
         when(atencion.marcarAtendida(1L, 2L)).thenReturn(new CitaVista(1L, DIA, LocalTime.of(10, 0),
-                LocalTime.of(10, 30), EstadoCita.ATENDIDA, 2L, "Carlos", 5L, "Juan"));
+                LocalTime.of(10, 30), Servicio.CORTE, "Corte de cabello", EstadoCita.ATENDIDA, 2L, "Carlos", 5L, "Juan"));
 
         mvc.perform(patch("/api/citas/1/atendida"))
                 .andExpect(status().isOk())

@@ -52,7 +52,9 @@ export function OperacionDia() {
                       <li key={cita.id} className={`turno turno--${cita.estado.toLowerCase()}`}>
                         <span className="turno__hora">{hora(cita.horaInicio)}</span>
                         <span className="turno__cliente">{cita.clienteNombre ?? 'Cliente'}</span>
-                        <span className="turno__estado">{cita.estado === 'ATENDIDA' ? 'Atendida' : 'Agendada'}</span>
+                        <span className="turno__estado">
+                          {cita.servicioNombre} · {cita.estado === 'ATENDIDA' ? 'Atendida' : 'Agendada'}
+                        </span>
                       </li>
                     ))}
                   </ol>

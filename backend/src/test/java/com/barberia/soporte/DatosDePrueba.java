@@ -4,6 +4,7 @@ import com.barberia.dominio.Barbero;
 import com.barberia.dominio.Cita;
 import com.barberia.dominio.Cliente;
 import com.barberia.dominio.Dueno;
+import com.barberia.dominio.Servicio;
 import com.barberia.servicio.agenda.HorarioAtencion;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -43,8 +44,12 @@ public final class DatosDePrueba {
     }
 
     public static Cita cita(long id, Barbero barbero, long clienteId, LocalDate fecha, String inicio) {
-        LocalTime horaInicio = LocalTime.parse(inicio);
-        Cita cita = new Cita(fecha, horaInicio, horaInicio.plusMinutes(30), clienteId, barbero);
+        return cita(id, barbero, clienteId, fecha, inicio, Servicio.CORTE);
+    }
+
+    public static Cita cita(long id, Barbero barbero, long clienteId, LocalDate fecha, String inicio,
+                            Servicio servicio) {
+        Cita cita = new Cita(fecha, LocalTime.parse(inicio), servicio, clienteId, barbero);
         return conId(cita, id);
     }
 

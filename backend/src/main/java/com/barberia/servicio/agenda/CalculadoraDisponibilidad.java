@@ -4,6 +4,7 @@ import com.barberia.dominio.Cita;
 import org.springframework.stereotype.Component;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,11 +27,12 @@ public class CalculadoraDisponibilidad {
 
     /**
      * @param citasDelDia citas del barbero en esa fecha
-     * @return franjas futuras que ninguna cita ocupa, en orden de hora
+     * @param duracion    tiempo que ocupa el servicio que se quiere reservar
+     * @return franjas futuras en las que el servicio cabe sin cruzarse con ninguna cita, en orden de hora
      */
-    public List<Franja> franjasLibres(LocalDate fecha, List<Cita> citasDelDia) {
+    public List<Franja> franjasLibres(LocalDate fecha, List<Cita> citasDelDia, Duration duracion) {
         LocalDateTime ahora = LocalDateTime.now(reloj);
-        return horario.franjas().stream()
+        return horario.franjas(duracion).stream()
                 .filter(franja -> !LocalDateTime.of(fecha, franja.horaInicio()).isBefore(ahora))
                 .filter(franja -> citasDelDia.stream()
                         .noneMatch(cita -> cita.ocupaFranja(franja.horaInicio(), franja.horaFin())))

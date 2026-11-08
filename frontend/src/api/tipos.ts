@@ -15,9 +15,21 @@ export interface SesionIniciada {
   usuario: Usuario;
 }
 
+/** Perfil del barbero que el cliente ve al agendar. */
 export interface Barbero {
   id: number;
   nombre: string;
+  descripcion: string | null;
+  fotoUrl: string | null;
+}
+
+export type CodigoServicio = 'CORTE' | 'BARBA' | 'CORTE_Y_BARBA';
+
+/** Servicio que se puede reservar y el tiempo que ocupa en la agenda. */
+export interface Servicio {
+  codigo: CodigoServicio;
+  nombre: string;
+  duracionMinutos: number;
 }
 
 /** Turno dentro de la jornada; horas en formato HH:mm o HH:mm:ss. */
@@ -33,6 +45,8 @@ export interface Cita {
   fecha: string;
   horaInicio: string;
   horaFin: string;
+  servicio: CodigoServicio;
+  servicioNombre: string;
   estado: EstadoCita;
   barberoId: number;
   barberoNombre: string;
@@ -42,6 +56,7 @@ export interface Cita {
 
 export interface SolicitudCita {
   barberoId: number;
+  servicio: CodigoServicio;
   fecha: string;
   horaInicio: string;
 }

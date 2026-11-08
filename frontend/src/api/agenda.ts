@@ -1,13 +1,17 @@
 import { ErrorApi, solicitar } from './cliente';
-import type { Barbero, Cita, Franja, SolicitudCita } from './tipos';
+import type { Barbero, Cita, CodigoServicio, Franja, Servicio, SolicitudCita } from './tipos';
 
 export function listarBarberos(): Promise<Barbero[]> {
   return solicitar<Barbero[]>('/api/barberos');
 }
 
-/** HU-02: solo los horarios libres del barbero en ese día. */
-export function horariosDisponibles(barberoId: number, fecha: string): Promise<Franja[]> {
-  return solicitar<Franja[]>(`/api/barberos/${barberoId}/disponibilidad`, { parametros: { fecha } });
+export function listarServicios(): Promise<Servicio[]> {
+  return solicitar<Servicio[]>('/api/servicios');
+}
+
+/** HU-02: horas del día en las que el barbero puede atender el servicio elegido. */
+export function horariosDisponibles(barberoId: number, fecha: string, servicio: CodigoServicio): Promise<Franja[]> {
+  return solicitar<Franja[]>(`/api/barberos/${barberoId}/disponibilidad`, { parametros: { fecha, servicio } });
 }
 
 /** HU-01 / HU-07 */

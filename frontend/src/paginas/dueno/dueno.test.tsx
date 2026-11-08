@@ -16,6 +16,8 @@ const cita = (cambios: Partial<Cita>): Cita => ({
   fecha: hoy,
   horaInicio: '10:00:00',
   horaFin: '10:30:00',
+  servicio: 'CORTE',
+  servicioNombre: 'Corte de cabello',
   estado: 'AGENDADA',
   barberoId: 2,
   barberoNombre: 'Carlos',
@@ -54,7 +56,7 @@ describe('operación del día (HU-06)', () => {
 
     const carlos = await screen.findByRole('region', { name: 'Carlos' });
     expect(within(carlos).getByText('Juan Pérez')).toBeInTheDocument();
-    expect(within(carlos).getByText('Atendida')).toBeInTheDocument();
+    expect(within(carlos).getByText('Corte de cabello · Atendida')).toBeInTheDocument();
     expect(within(screen.getByRole('region', { name: 'Andrés' })).getByText('Sin citas')).toBeInTheDocument();
     expect(screen.getByText('2 citas entre 2 barberos.')).toBeInTheDocument();
   });

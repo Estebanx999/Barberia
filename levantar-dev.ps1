@@ -113,6 +113,8 @@ if ($hayTablas -ne 't') {
         Consultar 'barberia' 'barberia' 'ALTER TABLE corte ADD COLUMN cliente_id BIGINT NOT NULL REFERENCES usuario (id)' | Out-Null
         Write-Host 'Columna corte.cliente_id agregada.'
     }
+    EjecutarArchivo "$raiz\database\actualizar_servicio_y_perfil.sql"
+    Write-Host 'Servicio de la cita y perfil de los barberos al día.'
     if ((Consultar 'barberia' 'barberia' 'SELECT count(*) FROM usuario WHERE contrasena_hash IS NOT NULL') -eq '0') {
         EjecutarArchivo "$raiz\database\datos_iniciales.sql"
         Write-Host 'Cuentas iniciales creadas.'

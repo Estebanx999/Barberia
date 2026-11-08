@@ -5,7 +5,8 @@
 --   docker cp database\crear_base_completa.sql postgres16:/tmp/crear_base_completa.sql
 --   docker exec postgres16 psql -U postgres -f /tmp/crear_base_completa.sql
 --
--- Si el usuario, la base o las tablas ya existen, no los vuelve a crear.
+-- Si el usuario, la base o las tablas ya existen, no los vuelve a crear; a una base
+-- existente solo le agrega las columnas nuevas (servicio de la cita y perfil del barbero).
 -- =============================================================================
 
 \set ON_ERROR_STOP on
@@ -19,7 +20,7 @@ WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'barberia') \gexec
 -- A partir de aquí todo se crea como el usuario barberia, dueño de las tablas.
 \connect barberia barberia
 
--- Si las tablas ya existen, no se toca nada (los datos quedan como están).
+-- Si las tablas ya existen, solo se agregan las columnas nuevas (los datos se conservan).
 SELECT to_regclass('public.usuario') IS NULL AS crear_esquema \gset
 \if :crear_esquema
 
@@ -36,6 +37,8 @@ CREATE TABLE usuario (
     correo   VARCHAR(160),
     telefono VARCHAR(30),
     contrasena_hash VARCHAR(100),
+    descripcion VARCHAR(300),
+    foto_url    VARCHAR(500),
     CONSTRAINT ck_usuario_tipo   CHECK (tipo IN ('CLIENTE', 'BARBERO', 'DUENO')),
     CONSTRAINT ck_usuario_nombre CHECK (btrim(nombre) <> ''),
     CONSTRAINT uq_usuario_correo UNIQUE (correo)
@@ -43,6 +46,8 @@ CREATE TABLE usuario (
 
 COMMENT ON TABLE  usuario      IS 'Personas del sistema: clientes, barberos y dueño';
 COMMENT ON COLUMN usuario.tipo IS 'CLIENTE, BARBERO o DUENO';
+COMMENT ON COLUMN usuario.descripcion IS 'Perfil del barbero que ve el cliente al agendar; nulo para clientes';
+COMMENT ON COLUMN usuario.foto_url    IS 'Enlace a la foto del barbero; sin foto se muestran sus iniciales';
 COMMENT ON COLUMN usuario.contrasena_hash IS 'Hash BCrypt; nulo si el usuario no tiene cuenta (cliente registrado en un corte sin cita)';
 
 ALTER TABLE usuario ADD CONSTRAINT ck_usuario_cuenta_con_correo CHECK (contrasena_hash IS NULL OR correo IS NOT NULL);
@@ -55,11 +60,13 @@ CREATE TABLE cita (
     fecha       DATE        NOT NULL,
     hora_inicio TIME        NOT NULL,
     hora_fin    TIME        NOT NULL,
+    servicio    VARCHAR(20) NOT NULL,
     estado      VARCHAR(20) NOT NULL DEFAULT 'AGENDADA',
     cliente_id  BIGINT      NOT NULL,
     barbero_id  BIGINT      NOT NULL,
     CONSTRAINT fk_cita_cliente FOREIGN KEY (cliente_id) REFERENCES usuario (id),
     CONSTRAINT fk_cita_barbero FOREIGN KEY (barbero_id) REFERENCES usuario (id),
+    CONSTRAINT ck_cita_servicio CHECK (servicio IN ('CORTE', 'BARBA', 'CORTE_Y_BARBA')),
     CONSTRAINT ck_cita_estado  CHECK (estado IN ('AGENDADA', 'ATENDIDA')),
     CONSTRAINT ck_cita_horas   CHECK (hora_fin > hora_inicio)
 );
@@ -68,7 +75,8 @@ CREATE INDEX ix_cita_barbero_fecha ON cita (barbero_id, fecha);
 CREATE INDEX ix_cita_fecha         ON cita (fecha, hora_inicio);
 
 COMMENT ON TABLE  cita        IS 'Citas agendadas; el cruce de horario (RN-04) se valida en la aplicación';
-COMMENT ON COLUMN cita.estado IS 'AGENDADA o ATENDIDA';
+COMMENT ON COLUMN cita.servicio IS 'CORTE (30 min), BARBA (30 min) o CORTE_Y_BARBA (60 min); define hora_fin';
+COMMENT ON COLUMN cita.estado   IS 'AGENDADA o ATENDIDA';
 
 -- -----------------------------------------------------------------------------
 -- Comisiones (HU-13, RN-01, RN-02): reparto del valor cobrado de un corte.
@@ -140,13 +148,50 @@ COMMIT;
 
 BEGIN;
 
-INSERT INTO usuario (tipo, nombre, correo, telefono, contrasena_hash) VALUES
-    ('DUENO',   'Dueño de la barbería', 'dueno@barberia.com',    '3000000001', '$2b$10$X0ha6s8lCnxfHwRUq1p2luRWqYg9h.CrFu58ztHiNwQd6JJm3Y8qG'),
-    ('BARBERO', 'Barbero Uno',          'barbero1@barberia.com', '3000000002', '$2b$10$X0ha6s8lCnxfHwRUq1p2luRWqYg9h.CrFu58ztHiNwQd6JJm3Y8qG'),
-    ('BARBERO', 'Barbero Dos',          'barbero2@barberia.com', '3000000003', '$2b$10$X0ha6s8lCnxfHwRUq1p2luRWqYg9h.CrFu58ztHiNwQd6JJm3Y8qG');
+INSERT INTO usuario (tipo, nombre, correo, telefono, contrasena_hash, descripcion) VALUES
+    ('DUENO',   'Mateo Herrera',  'dueno@barberia.com',    '3000000001', '$2b$10$X0ha6s8lCnxfHwRUq1p2luRWqYg9h.CrFu58ztHiNwQd6JJm3Y8qG',
+     'Cortes clásicos y diseño de barba, con más de 10 años de experiencia.'),
+    ('BARBERO', 'Carlos Ramírez', 'barbero1@barberia.com', '3000000002', '$2b$10$X0ha6s8lCnxfHwRUq1p2luRWqYg9h.CrFu58ztHiNwQd6JJm3Y8qG',
+     'Especialista en degradados y estilos modernos.'),
+    ('BARBERO', 'Luis Peña',      'barbero2@barberia.com', '3000000003', '$2b$10$X0ha6s8lCnxfHwRUq1p2luRWqYg9h.CrFu58ztHiNwQd6JJm3Y8qG',
+     'Experto en afeitado tradicional y cuidado de la barba.');
+
+-- Para mostrar la foto de un barbero, guarden el enlace de la imagen:
+--   UPDATE usuario SET foto_url = 'https://...' WHERE correo = 'barbero1@barberia.com';
 
 COMMIT;
 
 \else
-\echo 'Las tablas ya existen en la base barberia; no se modificó nada.'
+\echo 'Las tablas ya existen en la base barberia; se revisan las columnas nuevas.'
+
+BEGIN;
+
+ALTER TABLE usuario ADD COLUMN IF NOT EXISTS descripcion VARCHAR(300);
+ALTER TABLE usuario ADD COLUMN IF NOT EXISTS foto_url    VARCHAR(500);
+
+-- Las citas anteriores eran de un turno de 30 minutos: quedan como corte.
+ALTER TABLE cita ADD COLUMN IF NOT EXISTS servicio VARCHAR(20) NOT NULL DEFAULT 'CORTE';
+ALTER TABLE cita ALTER COLUMN servicio DROP DEFAULT;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ck_cita_servicio') THEN
+        ALTER TABLE cita ADD CONSTRAINT ck_cita_servicio
+            CHECK (servicio IN ('CORTE', 'BARBA', 'CORTE_Y_BARBA'));
+    END IF;
+END $$;
+
+-- Perfil de las cuentas iniciales, solo si aún no tienen uno.
+UPDATE usuario SET nombre = 'Mateo Herrera',
+                   descripcion = 'Cortes clásicos y diseño de barba, con más de 10 años de experiencia.'
+ WHERE correo = 'dueno@barberia.com' AND descripcion IS NULL;
+UPDATE usuario SET nombre = 'Carlos Ramírez',
+                   descripcion = 'Especialista en degradados y estilos modernos.'
+ WHERE correo = 'barbero1@barberia.com' AND descripcion IS NULL;
+UPDATE usuario SET nombre = 'Luis Peña',
+                   descripcion = 'Experto en afeitado tradicional y cuidado de la barba.'
+ WHERE correo = 'barbero2@barberia.com' AND descripcion IS NULL;
+
+COMMIT;
+
 \endif
