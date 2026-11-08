@@ -3,6 +3,17 @@ import { borrarToken, leerToken } from '../sesion/almacen';
 /** Evento que se emite cuando el backend rechaza el token (vencido o inválido). */
 export const EVENTO_SESION_EXPIRADA = 'barberia:sesion-expirada';
 
+/**
+ * Evento que avisa si el servidor se está iniciando (detail: true) o ya respondió
+ * (detail: false). En la nube gratuita el backend se apaga sin uso y tarda unos
+ * minutos en volver; mientras tanto la plataforma responde 502/503 sin JSON.
+ */
+export const EVENTO_SERVIDOR_INICIANDO = 'barberia:servidor-iniciando';
+
+const ESTADOS_SERVIDOR_INICIANDO = new Set([502, 503]);
+const PAUSA_ENTRE_INTENTOS_MS = 5_000;
+const ESPERA_MAXIMA_MS = 4 * 60_000;
+
 /** Error de la API con el estado HTTP y el cuerpo Problem Details del backend. */
 export class ErrorApi extends Error {
   readonly estado: number;
@@ -30,6 +41,8 @@ const MENSAJES_POR_ESTADO: Record<number, string> = {
   403: 'Tu cuenta no tiene acceso a esta sección.',
   404: 'No encontramos lo que buscas.',
   500: 'El servidor no pudo completar la operación. Intenta de nuevo en un momento.',
+  502: 'El servidor no está disponible en este momento. Intenta de nuevo en unos minutos.',
+  503: 'El servidor no está disponible en este momento. Intenta de nuevo en unos minutos.',
 };
 
 /** Hace una solicitud JSON al backend; agrega el token si hay sesión. */
@@ -46,13 +59,16 @@ export async function solicitar<T>(ruta: string, opciones: Opciones = {}): Promi
   }
   const url = parametros ? `${ruta}?${new URLSearchParams(parametros).toString()}` : ruta;
 
-  let respuesta: Response;
-  try {
-    respuesta = await fetch(url, {
+  const enviar = () =>
+    fetch(url, {
       method: metodo,
       headers: cabeceras,
       body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
     });
+
+  let respuesta: Response;
+  try {
+    respuesta = await esperarServidor(enviar);
   } catch {
     throw new ErrorApi(0, 'No hay conexión con el servidor. Revisa tu conexión e intenta de nuevo.');
   }
@@ -68,6 +84,34 @@ export async function solicitar<T>(ruta: string, opciones: Opciones = {}): Promi
     return undefined as T;
   }
   return (await respuesta.json()) as T;
+}
+
+/**
+ * Repite la solicitud mientras la plataforma indique que el backend se está
+ * iniciando. Esa respuesta no viene del backend (no trae JSON), así que la
+ * solicitud no se procesó y repetirla no la duplica.
+ */
+async function esperarServidor(enviar: () => Promise<Response>): Promise<Response> {
+  const limite = Date.now() + ESPERA_MAXIMA_MS;
+  let respuesta = await enviar();
+  if (!esServidorIniciando(respuesta)) {
+    return respuesta;
+  }
+  window.dispatchEvent(new CustomEvent(EVENTO_SERVIDOR_INICIANDO, { detail: true }));
+  try {
+    while (esServidorIniciando(respuesta) && Date.now() < limite) {
+      await new Promise((resolver) => setTimeout(resolver, PAUSA_ENTRE_INTENTOS_MS));
+      respuesta = await enviar();
+    }
+    return respuesta;
+  } finally {
+    window.dispatchEvent(new CustomEvent(EVENTO_SERVIDOR_INICIANDO, { detail: false }));
+  }
+}
+
+function esServidorIniciando(respuesta: Response): boolean {
+  const tipo = respuesta.headers.get('Content-Type') ?? '';
+  return ESTADOS_SERVIDOR_INICIANDO.has(respuesta.status) && !tipo.includes('json');
 }
 
 async function aErrorApi(respuesta: Response): Promise<ErrorApi> {
