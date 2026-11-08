@@ -13,6 +13,9 @@ FROM nginx:1.27-alpine
 
 # Dirección del backend a la que Nginx reenvía /api. Se cambia al desplegar en la nube.
 ENV BACKEND_URL=http://backend:8080
+# Expone el DNS del contenedor como ${NGINX_LOCAL_RESOLVERS} para la plantilla: así Nginx
+# resuelve el backend en cada petición y arranca aunque el backend aún no exista.
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
 
 # Nginx reemplaza ${BACKEND_URL} en la plantilla al arrancar.
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template

@@ -3,9 +3,13 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
+    resolver ${NGINX_LOCAL_RESOLVERS} valid=30s ipv6=off;
+
     # La API se reenvía al backend: el navegador ve un solo origen y no hace falta CORS.
+    # Con la dirección en una variable, Nginx no exige que el backend responda al arrancar.
     location /api/ {
-        proxy_pass ${BACKEND_URL};
+        set $backend ${BACKEND_URL};
+        proxy_pass $backend;
         proxy_ssl_server_name on;
         # En la nube el backend gratuito se duerme y tarda cerca de un minuto en despertar.
         proxy_connect_timeout 75s;
